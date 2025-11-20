@@ -1,0 +1,35 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pyteomics = ">=4.0.0,!=4.7.4,!=4.7.3"
+numpy = ">=1.20,<2.0"
+"pyteomics.cythonize" = ">=0.2.2"
+pandas = ">=1.1.0"
+cython = ">=3.0.0,<3.1.0"
+lxml = "*"
+zipfile-deflate64 = "*"
+memoized-property = "*"
+termcolor = "*"
+pygments = "*"
+progress = "*"
+dirlock = "*"
+fisher-py = "*"
+pyyaml = "*"
+
+[dev-packages]
+pytest = ">=3.6.4"
+pytest-cov = "*"
+pytest-flake8 = ">=1.1.0"
+flake8 = "==4.0.1"
+build = "*"
+memory-profiler = "*"
+pprofile = "*"
+py-spy = "*"
+pytest-pydocstyle = "*"
+recursive-diff = "*"
+
+[requires]
+python_version = "3.10"

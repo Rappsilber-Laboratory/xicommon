@@ -1,0 +1,171 @@
+{
+  "LinkSite": [
+    {
+      "id": 0,
+      "peptideId": 0,
+      "linkSite": -1
+    },
+    {
+      "id": 0,
+      "peptideId": 1,
+      "linkSite": -1
+    }
+  ],
+  "Peptides": [
+    {
+      "base_sequence": "LAK",
+      "modification_ids": [0],
+      "modification_positions": [3]
+    },
+    {
+      "base_sequence": "TSR",
+      "modification_ids": [],
+      "modification_positions": []
+    }
+  ],
+  "annotation": {
+    "returnModSyntax": "Xmod",
+    "precursorCharge": 3,
+    "config": {
+      "ms2_tol": "5 ppm",
+      "crosslinker": [],
+      "fragmentation": {
+        "nterm_ions": ["b"],
+        "cterm_ions": ["y"],
+        "add_precursor": true
+      },
+      "modification": {
+        "modifications": [
+          {
+            "specificity": ["K"],
+            "name": "sda",
+            "mass": 82.04186484,
+            "type": "variable"
+          }
+        ]
+      }
+    }
+  },
+  "peaks": [
+    {
+      "mz": 34.68983596178233,
+      "intensity": 100
+    },
+    {
+      "mz": 38.701964464689,
+      "intensity": 50
+    },
+    {
+      "mz": 51.531115709234,
+      "intensity": 100
+    },
+    {
+      "mz": 57.549308463594,
+      "intensity": 50
+    },
+    {
+      "mz": 59.044501708079004,
+      "intensity": 100
+    },
+    {
+      "mz": 62.381002392925666,
+      "intensity": 50
+    },
+    {
+      "mz": 63.700512096539,
+      "intensity": 100
+    },
+    {
+      "mz": 77.05640731821234,
+      "intensity": 50
+    },
+    {
+      "mz": 88.05517784283568,
+      "intensity": 100
+    },
+    {
+      "mz": 88.063114328679,
+      "intensity": 100
+    },
+    {
+      "mz": 93.067865355949,
+      "intensity": 50
+    },
+    {
+      "mz": 95.047129911369,
+      "intensity": 100
+    },
+    {
+      "mz": 100.735445246449,
+      "intensity": 50
+    },
+    {
+      "mz": 102.054954951589,
+      "intensity": 100
+    },
+    {
+      "mz": 114.091340460309,
+      "intensity": 50
+    },
+    {
+      "mz": 115.080972743879,
+      "intensity": 50
+    },
+    {
+      "mz": 121.73773733230566,
+      "intensity": 100
+    },
+    {
+      "mz": 131.579128530814,
+      "intensity": 100
+    },
+    {
+      "mz": 138.43013323882565,
+      "intensity": 50
+    },
+    {
+      "mz": 150.599529636234,
+      "intensity": 50
+    },
+    {
+      "mz": 175.118952190479,
+      "intensity": 100
+    },
+    {
+      "mz": 182.10296776501897,
+      "intensity": 100
+    },
+    {
+      "mz": 185.128454245019,
+      "intensity": 50
+    },
+    {
+      "mz": 189.086983355859,
+      "intensity": 100
+    },
+    {
+      "mz": 207.14156162479895,
+      "intensity": 50
+    },
+    {
+      "mz": 229.154669020879,
+      "intensity": 50
+    },
+    {
+      "mz": 262.150980594749,
+      "intensity": 100
+    },
+    {
+      "mz": 300.191782805589,
+      "intensity": 50
+    },
+    {
+      "mz": 363.19865906315897,
+      "intensity": 100
+    },
+    {
+      "mz": 413.27584678271893,
+      "intensity": 50
+    }
+  ]
+}

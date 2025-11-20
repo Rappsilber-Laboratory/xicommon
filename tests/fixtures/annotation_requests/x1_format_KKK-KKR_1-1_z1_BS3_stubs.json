@@ -1,0 +1,91 @@
+{
+  "Peptides": [
+    {
+      "sequence": [
+        {
+          "aminoAcid": "K",
+          "Modification": ""
+        },
+        {
+          "aminoAcid": "K",
+          "Modification": ""
+        },
+        {
+          "aminoAcid": "K",
+          "Modification": ""
+        }
+      ]
+    },
+    {
+      "sequence": [
+        {
+          "aminoAcid": "K",
+          "Modification": ""
+        },
+        {
+          "aminoAcid": "K",
+          "Modification": ""
+        },
+        {
+          "aminoAcid": "R",
+          "Modification": ""
+        }
+      ]
+    }
+  ],
+  "LinkSite": [
+    {
+      "id": 0,
+      "peptideId": 0,
+      "linkSite": 1
+    },
+    {
+      "id": 0,
+      "peptideId": 1,
+      "linkSite": 1
+    }
+  ],
+"peaks": [
+	{"mz":257.19720246677, "intensity":100.0},
+	{"mz":275.20776273677, "intensity":100.0},
+	{"mz":403.30272573677, "intensity":100.0},
+	{"mz":413.27583273677, "intensity":100.0},
+	{"mz":431.30887373677, "intensity":100.0},
+	{"mz":441.28198073677004, "intensity":100.0},
+	{"mz":541.37079573677, "intensity":100.0},
+	{"mz":569.37694373677, "intensity":100.0},
+	{"mz":843.5774300067701, "intensity":100.0},
+	{"mz":971.6723930067701, "intensity":100.0}
+  ],
+  "annotation": {
+    "returnModSyntax": "Xmod",
+    "crosslinker": {
+      "modMass": 138.06808,
+      "stubs1": [
+        "b:138.06808:o"
+      ],
+      "stubs2": [
+        "o:0.0:b"
+      ]
+    },
+    "fragmentTolerance": {
+      "tolerance": 1,
+      "unit": "ppm"
+    },
+    "ions": [
+      {
+        "type": "PeptideIon"
+      },
+      {
+        "type": "BIon"
+      },
+      {
+        "type": "YIon"
+      }
+    ],
+    "precursorCharge": 1,
+    "modifications": [],
+    "losses": [],
+    "precursorMZ": 971.672393
+  }
+}

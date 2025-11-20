@@ -1,0 +1,82 @@
+{
+  "digestion": {
+    "enzymes": ["trypsin"],
+    "missed_cleavages": 4,
+    "min_peptide_length": 2,
+    "approx_max_mass": 6550.2296023483295
+  },
+  "ms1_tol": "6ppm",
+  "ms2_tol": "10ppm",
+  "top_n_alpha_scores": 150,
+  "top_n_alpha_beta_scores": 10,
+  "crosslinker": {
+		   "name": "BS3",
+                   "mass": 138.06807961,
+                   "specificity": [["K", "S", "T", "Y", "nterm"]],
+                   "specificity_bonus": [[0.2, 0, 0, 0, 0.2]]},
+  "conservative_n_multi_loss": 3,
+  "isotope_error_ximpa": 2,
+  "mod_peptide_syntax": "Xmod",
+  "fragmentation": {
+    "nterm_ions": ["b"],
+    "cterm_ions": ["y"],
+    "add_precursor": true,
+    "max_nloss": 4,
+    "losses": [
+      {
+        "name": "H2O",
+        "specificity": ["S", "T", "D", "E", "cterm"],
+        "composition": "",
+        "mass": 18.01056027
+      },
+      {
+        "name": "NH3",
+        "specificity": ["R", "K", "N", "Q", "nterm"],
+        "composition": "",
+        "mass": 17.02654493
+      }
+    ]
+  },
+  "modification": {
+    "max_var_protein_mods": 3,
+    "max_modified_peps": 20,
+    "modifications": [
+      {
+        "name": "cm",
+        "specificity": ["C"],
+        "type": "fixed",
+        "mass": 57.021464
+      },
+      {
+        "name": "ox",
+        "specificity": ["M"],
+        "type": "variable",
+        "mass": 15.99491463
+      },
+      {
+        "name": "bs3oh",
+        "specificity": ["K"],
+        "type": "variable",
+        "mass": 156.0786347
+      },
+      {
+        "name": "bs3nh2",
+        "specificity": ["K"],
+        "type": "variable",
+        "mass": 155.094619105
+      },
+      {
+        "name": "bs3oh",
+        "specificity": ["S", "T", "Y"],
+        "type": "variable",
+        "mass": 156.0786347
+      },
+      {
+        "name": "bs3nh2",
+        "specificity": ["S", "T", "Y"],
+        "type": "variable",
+        "mass": 155.094619105
+      }
+    ]
+  }
+}

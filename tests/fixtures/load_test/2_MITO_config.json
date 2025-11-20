@@ -1,0 +1,71 @@
+{
+  "reporting_requirements": {
+    "report_top_ranking_only": true
+  },
+  "digestion": {
+    "enzymes": ["trypsin"],
+    "missed_cleavages": 2,
+    "min_peptide_length": 2
+  },
+  "isotope_error_ximpa": 2,
+  "threads" : 20,
+  "ms1_tol": "3ppm",
+  "ms2_tol": "5ppm",
+  "top_n_alpha_scores": 10,
+  "top_n_alpha_beta_scores": 10,
+  "crosslinker": "DSSO",
+  "conservative_n_multi_loss": 3,
+  "denoise_alpha": {
+    "top_n": 10,
+    "bin_size": 100
+  },
+  "denoise_alpha_beta": {
+    "top_n": 20,
+    "bin_size": 100
+  },
+  "fragmentation": {
+    "nterm_ions": ["b"],
+    "cterm_ions": ["y"],
+    "add_precursor": true,
+    "max_nloss": 4,
+    "match_missing_monoisotopic": true,
+    "losses": [
+      {
+        "name": "H2O",
+        "specificity": ["S", "T", "D", "E", "cterm"],
+        "composition": "",
+        "mass": 18.01056027
+      },
+      {
+        "name": "NH3",
+        "specificity": ["R", "K", "N", "Q", "nterm"],
+        "composition": "",
+        "mass": 17.02654493
+      },
+      {
+        "name": "CH3SOH",
+        "specificity": ["oxM"],
+        "composition": "",
+        "mass": 63.99828547
+      }
+    ]
+  },
+  "modification": {
+    "max_var_protein_mods": 2,
+    "max_modified_peps": 20,
+    "modifications": [
+      {
+        "name": "cm",
+        "specificity": ["C"],
+        "type": "fixed",
+        "composition": "C2H3N1O1"
+      },
+      {
+        "name": "ox",
+        "specificity": ["M"],
+        "type": "variable",
+        "composition": "O1"
+      }
+    ]
+  }
+}

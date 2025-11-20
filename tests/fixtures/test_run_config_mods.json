@@ -1,0 +1,30 @@
+{
+  "digestion": {
+    "enzymes": ["trypsin"],
+    "missed_cleavages": 0,
+    "min_peptide_length": 3
+  },
+  "ms1_tol": "5ppm",
+  "ms2_tol": "15ppm",
+  "top_n_alpha_scores": 10,
+  "crosslinker": ["BS3"],
+  "reporting_requirements": {
+    "report_top_ranking_only": false
+  },
+  "modification": {
+    "modifications": [
+      {
+        "name": "cm",
+        "specificity": ["C"],
+        "type": "fixed",
+        "composition": "C2H3N1O1"
+      },
+      {
+        "name": "ox",
+        "specificity": ["M"],
+        "type": "variable",
+        "composition": "O1"
+      }
+    ]
+  }
+}

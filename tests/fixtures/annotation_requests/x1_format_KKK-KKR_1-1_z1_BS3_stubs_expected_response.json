@@ -1,0 +1,460 @@
+{
+"annotation":{
+    "xiVersion": "2.0.2",
+    "returnModSyntax": "Xmod",
+	"fragmentTolerance": {"tolerance":1.0,"unit":"ppm"},
+    "losses": [],
+	"modifications":[],
+	"ions":[
+		{"type":"PeptideIon"},
+		{"type":"BIon"},
+		{"type":"YIon"}
+	],
+	"crosslinker":{
+        "modMass":138.06808,
+        "stubs1": [
+            "b:138.06808:o",
+            "o:0.0:b"
+        ],
+        "stubs2": [
+            "b:138.06808:o",
+            "o:0.0:b"
+        ],
+        "name": "MockCL",
+        "specificity": [
+            [
+                "X"
+            ]
+        ]
+    },
+	"precursorCharge": 1,
+	"precursorMZ": 971.672393,
+	"calculatedMZ": 971.6724119278791,
+	"precursorError": {
+            "tolerance": -0.0194797,
+            "unit": "ppm"
+        }
+},"Peptides":[
+	{
+		"sequence":[
+			{"aminoAcid":"K","Modification":""},
+			{"aminoAcid":"K","Modification":""},
+			{"aminoAcid":"K","Modification":""}
+		]
+	},
+	{
+		"sequence":[
+			{"aminoAcid":"K","Modification":""},
+			{"aminoAcid":"K","Modification":""},
+			{"aminoAcid":"R","Modification":""}
+		]
+	}
+],
+"LinkSite" : [
+	{"peptideId":0,"linkSite":1,"id":0},
+	{"peptideId":1,"linkSite":1,"id":0}
+],
+"peaks" :[
+	
+	
+	{"mz":257.19720246677, "intensity":100.0, "clusterIds":[0]},
+	{"mz":275.20776273677, "intensity":100.0, "clusterIds":[1]},
+	{"mz":403.30272573677, "intensity":100.0, "clusterIds":[2]},
+	{"mz":413.27583273677, "intensity":100.0, "clusterIds":[3]},
+	{"mz":431.30887373677, "intensity":100.0, "clusterIds":[4]},
+	{"mz":441.28198073677004, "intensity":100.0, "clusterIds":[5]},
+	{"mz":541.37079573677, "intensity":100.0, "clusterIds":[6]},
+	{"mz":569.37694373677, "intensity":100.0, "clusterIds":[7]},
+	{"mz":843.5774300067701, "intensity":100.0, "clusterIds":[8]},
+	{"mz":971.6723930067701, "intensity":100.0, "clusterIds":[9]}
+],
+"clusters": [ 
+	{"charge":0,"firstPeakId":0},
+	{"charge":0,"firstPeakId":1},
+	{"charge":0,"firstPeakId":2},
+	{"charge":0,"firstPeakId":3},
+	{"charge":0,"firstPeakId":4},
+	{"charge":0,"firstPeakId":5},
+	{"charge":0,"firstPeakId":6},
+	{"charge":0,"firstPeakId":7},
+	{"charge":0,"firstPeakId":8},
+	{"charge":0,"firstPeakId":9}
+],
+"fragments": [ 
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                0
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 0,
+                    "calcMZ": 257.19720251117906,
+                    "error": -0.00017266530987993057,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "b2o",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 0,
+                    "to": 1
+                }
+            ],
+            "sequence": "KK",
+            "stub": "o",
+            "type": "b"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                0
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 0,
+                    "calcMZ": 257.19720251117906,
+                    "error": -0.00017266530987993057,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "b2o",
+            "nlosses": 0,
+            "peptideId": 1,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 1,
+                    "to": 1
+                }
+            ],
+            "sequence": "KK",
+            "stub": "o",
+            "type": "b"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                1
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 1,
+                    "calcMZ": 275.207767194879,
+                    "error": -0.016199066796608926,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "y2o",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 1,
+                    "peptideId": 0,
+                    "to": 2
+                }
+            ],
+            "sequence": "KK",
+            "stub": "o",
+            "type": "y"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                2
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 2,
+                    "calcMZ": 403.302730192579,
+                    "error": -0.011048298639569902,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 3,
+            "name": "Po",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 0,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKK",
+            "stub": "o",
+            "type": "P"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                3
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 3,
+                    "calcMZ": 413.275847194879,
+                    "error": -0.034984161628283134,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "y2b",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 1,
+                    "peptideId": 0,
+                    "to": 2
+                }
+            ],
+            "sequence": "KK",
+            "stub": "b",
+            "type": "y"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                4
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 4,
+                    "calcMZ": 431.308878202179,
+                    "error": -0.010353158100359378,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 3,
+            "name": "Po",
+            "nlosses": 0,
+            "peptideId": 1,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 1,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKR",
+            "stub": "o",
+            "type": "P"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                5
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 5,
+                    "calcMZ": 441.281995204479,
+                    "error": -0.03278563171964042,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "y2b",
+            "nlosses": 0,
+            "peptideId": 1,
+            "range": [
+                {
+                    "from": 1,
+                    "peptideId": 1,
+                    "to": 2
+                }
+            ],
+            "sequence": "KR",
+            "stub": "b",
+            "type": "y"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                6
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 6,
+                    "calcMZ": 541.3708101925791,
+                    "error": -0.026702232330298503,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 3,
+            "name": "Pb",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 0,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKK",
+            "stub": "b",
+            "type": "P"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                7
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 7,
+                    "calcMZ": 569.376958202179,
+                    "error": -0.02540568031861194,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 3,
+            "name": "Pb",
+            "nlosses": 0,
+            "peptideId": 1,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 1,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKR",
+            "stub": "b",
+            "type": "P"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                8
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 8,
+                    "calcMZ": 843.577448930179,
+                    "error": -0.022432331407248336,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "y2+P",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 1,
+                    "to": 2
+                },
+                {
+                    "from": 1,
+                    "peptideId": 0,
+                    "to": 2
+                }
+            ],
+            "sequence": "KK + KKR",
+            "stub": "",
+            "type": "y"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                8
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 8,
+                    "calcMZ": 843.5774489301791,
+                    "error": -0.02243233154201585,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 2,
+            "name": "y2+P",
+            "nlosses": 0,
+            "peptideId": 1,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 0,
+                    "to": 2
+                },
+                {
+                    "from": 1,
+                    "peptideId": 1,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKK + KR",
+            "stub": "",
+            "type": "y"
+        },
+        {
+            "class": "non-lossy",
+            "clusterIds": [
+                9
+            ],
+            "clusterInfo": [
+                {
+                    "Clusterid": 9,
+                    "calcMZ": 971.672411927879,
+                    "error": -0.019472724213840633,
+                    "errorUnit": "ppm",
+                    "matchedCharge": 1,
+                    "matchedMissingMonoIsotopic": 0
+                }
+            ],
+            "ionNumber": 3,
+            "name": "P+P",
+            "nlosses": 0,
+            "peptideId": 0,
+            "range": [
+                {
+                    "from": 0,
+                    "peptideId": 0,
+                    "to": 2
+                },
+                {
+                    "from": 0,
+                    "peptideId": 1,
+                    "to": 2
+                }
+            ],
+            "sequence": "KKK + KKR",
+            "stub": "",
+            "type": "P"
+        }
+]
+}
