@@ -17,7 +17,9 @@ tests/fixtures/xi1_example_HSA_10_scans/xi1_xi2_comparison.csv
 
 tests/fixtures/xi1_example_HSA_10_scans/xiSPEC_xi1_xi2_comparison.csv
 
-/xisearch2/cython/*.so
+/xicommon/cython/*.so
+/xicommon/cython/*.c
+/xicommon/cython/*.cpp
 .python-version
 
 dist/
