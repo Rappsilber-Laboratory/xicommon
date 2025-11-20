@@ -31,11 +31,11 @@ extensions = []
 for pyx_file in pyx_files:
     # Get module name (e.g., xicommon.cython.fast_unique)
     module_name = pyx_file.replace(os.sep, ".").replace(".pyx", "")
-    
+
     # Check if file needs C++ compilation
     language = "c++" if "isin_set" in pyx_file else "c"
     extra_compile_args = ["-std=c++11"] if language == "c++" else []
-    
+
     ext = Extension(
         module_name,
         [pyx_file],
