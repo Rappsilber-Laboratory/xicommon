@@ -73,7 +73,7 @@ for filename in files:
             if cname.startswith(funcname) and 'cpython' in cname and \
                 not cname.startswith("__") and cname.endswith(".so"):
                 so_date = os.path.getmtime(os.path.join(directory, cname))
-                # found the so - check date differ for more then 2 seconds
+                # found the so - check if date differs by more than 2 seconds
                 if so_date < file_date - 2:
                     # so is older - delete it and ask for restart
                     os.remove(os.path.join(directory, cname))
