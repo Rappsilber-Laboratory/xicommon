@@ -87,5 +87,7 @@ class DenoiseFilter(BaseFilter):
             new_spec.isotope_cluster_int_values = int_values[s][sort_mask]
             new_spec.isotope_cluster_charge_values = spectrum.isotope_cluster_charge_values[s][
                 sort_mask]
+        if hasattr(spectrum, 'peak_tolerance'):
+            new_spec.peak_tolerance = spectrum.peak_tolerance[s][sort_mask]
 
         return new_spec
