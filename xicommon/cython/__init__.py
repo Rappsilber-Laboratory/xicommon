@@ -20,6 +20,7 @@ from importlib import import_module
 import numpy as np
 import pyximport
 import os
+import sys
 
 # Try to avoid the NPY deprecation warnings at compile time via CPPFLAGS
 _npy_define = '-DNPY_NO_DEPRECATED_API=NPY_1_9_API_VERSION'
@@ -35,6 +36,13 @@ files = os.listdir(directory)
 
 __all__ = []
 
+
+def installed_via_pip():
+    file_path = os.path.abspath(__file__)
+    for path in sys.path:
+        if 'site-packages' in path and file_path.startswith(os.path.abspath(path)):
+            return True
+    return False
 
 def _get_name_for_attribute(search_module, search_attribute):
     """
@@ -65,20 +73,21 @@ for filename in files:
         except AttributeError:
             pass
 
-        # look for the compiled  library and check if it is older than the pyx file?
-        file_date = os.path.getmtime(os.path.join(directory, filename))
-        
-        for cname in files:
+        if installed_via_pip():
+            # look for the compiled  library and check if it is older than the pyx file?
+            file_date = os.path.getmtime(os.path.join(directory, filename))
+            
+            for cname in files:
 
-            if cname.startswith(funcname) and 'cpython' in cname and \
-                not cname.startswith("__") and cname.endswith(".so"):
-                so_date = os.path.getmtime(os.path.join(directory, cname))
-                # found the so - check if date differs by more than 2 seconds
-                if so_date < file_date - 2:
-                    # so is older - delete it and ask for restart
-                    os.remove(os.path.join(directory, cname))
-                    print(f"Cython module {modulename} was out of date. Deleted please restart.")
-                    restart_needed = True
+                if cname.startswith(funcname) and 'cpython' in cname and \
+                    not cname.startswith("__") and cname.endswith(".so"):
+                    so_date = os.path.getmtime(os.path.join(directory, cname))
+                    # found the so - check if date differs by more than 2 seconds
+                    if so_date < file_date - 2:
+                        # so is older - delete it and ask for restart
+                        os.remove(os.path.join(directory, cname))
+                        print(f"Cython module {modulename} was out of date. Deleted please restart.")
+                        restart_needed = True
 
         # if export was defined
         if len(mod_exports) > 0:
