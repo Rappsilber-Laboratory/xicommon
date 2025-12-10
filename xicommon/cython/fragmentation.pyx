@@ -252,8 +252,8 @@ cdef class Fragmentation:
     @cython.wraparound(False)
     @cython.initializedcheck(False)
     @cython.nonecheck(False)
-    cdef np.ndarray _fragment(self, unsigned char* base_sequence,
-                              np.uint8_t[:] modifications,
+    cdef np.ndarray _fragment(self, const unsigned char* base_sequence,
+                              const np.uint8_t[:] modifications,
                               int peptide_length,
                               int include_precursor,
                               double peptide_mass):
@@ -365,8 +365,8 @@ cdef class Fragmentation:
     @cython.wraparound(False)
     @cython.initializedcheck(False)
     @cython.nonecheck(False)
-    cdef np.ndarray _fragment_minimal(self, unsigned char* base_sequence,
-                 np.uint8_t[:] modifications, int peptide_length,
+    cdef np.ndarray _fragment_minimal(self, const unsigned char* base_sequence,
+                 const np.uint8_t[:] modifications, int peptide_length,
                  int include_precursor, double peptide_mass):
         """
         Generate the basic fragments of a peptide for multiple c- and n-ion types.
@@ -472,8 +472,8 @@ cdef class Fragmentation:
 
 
 
-    cpdef np.ndarray fragment(self, unsigned char* base_sequence,
-                 np.uint8_t[:] modifications,
+    cpdef np.ndarray fragment(self, const unsigned char* base_sequence,
+                 const np.uint8_t[:] modifications,
                  int peptide_length,
                  int include_precursor,
                  double peptide_mass):
