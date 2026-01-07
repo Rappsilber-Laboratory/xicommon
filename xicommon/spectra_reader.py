@@ -34,7 +34,7 @@ import sys
 from xicommon.cython import isin_set_long
 from lxml.etree import XMLSyntaxError
 from .xi_logging import log
-
+from dirlock import DirLock
 
 class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',
@@ -357,14 +357,16 @@ class PeakListWrapper:
                     zip_f = zipfile64.ZipFile(peaklist_file)
 
                 for member in zip_f.infolist():
-                    self._load(zip_f.open(member), member.filename,
-                               peaklist_file + os.sep + member.filename)
+                    if not member.is_dir():
+                        self._load(zip_f.open(member), member.filename,
+                                   peaklist_file + ".content" + os.sep + member.filename)
             # check for tarfile
             elif tarfile.is_tarfile(peaklist_file):
                 tar_f = tarfile.open(peaklist_file)
                 for member in tar_f.getmembers():
-                    self._load(tar_f.extractfile(member), member.name,
-                               peaklist_file + os.sep + member.path)
+                    if not member.isdir():
+                        self._load(tar_f.extractfile(member), member.name,
+                                   peaklist_file + ".content" + os.sep + member.path)
             # else load file
             else:
                 self._load(peaklist_file, peaklist_file)
@@ -383,10 +385,28 @@ class PeakListWrapper:
             self.readers.append(MGFReader(self.context))
         elif filename.lower().endswith('.mzml'):
             self.readers.append(MZMLReader(self.context))
-        elif filename.lower().endswith('.raw') and isinstance(stream, str):
+        elif filename.lower().endswith('.raw'):
             log('Running into RAW file based search')
-            self.readers.append(RAWReader(self.context))
-        else:
+            if isinstance(stream, str):
+                self.readers.append(RAWReader(self.context))
+            else:
+                extract_dir = re.sub(r'(\.content).*', r'\1', source_path)
+                os.makedirs(extract_dir, exist_ok=True)
+                extract_file = os.path.join(extract_dir, filename)
+                lock = DirLock(f"{extract_file}.lock")
+                lock.acquire()
+                try:
+                    # if the file does not yet exist, write it out
+                    if not os.path.exists(extract_file):
+                        log(f'extracting raw file from stream: {extract_file}')
+                        with open(extract_file, 'wb') as f:
+                            f.write(stream.read())
+                    else:
+                        log(f'raw file already extracted, skipping extraction ({extract_file})')
+                finally:
+                    lock.release()
+                self.readers.append(RAWReader(self.context))
+                stream = extract_file        else:
             return
         self.readers[-1].load(stream, source_path=source_path,
                               file_name=filename, step=self.step, offset=self.offset)
