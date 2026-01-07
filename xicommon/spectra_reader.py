@@ -406,7 +406,8 @@ class PeakListWrapper:
                 finally:
                     lock.release()
                 self.readers.append(RAWReader(self.context))
-                stream = extract_file        else:
+                stream = extract_file
+        else:
             return
         self.readers[-1].load(stream, source_path=source_path,
                               file_name=filename, step=self.step, offset=self.offset)
