@@ -391,6 +391,12 @@ class PeakListWrapper:
             if isinstance(stream, str):
                 self.readers.append(RAWReader(self.context))
             else:
+                # Validate that source_path contains ".content" before extracting
+                if not source_path or '.content' not in source_path:
+                    raise ValueError(
+                        f"Cannot extract RAW file from stream: source_path must contain '.content' "
+                        f"to determine extraction directory. Got: {source_path}"
+                    )
                 extract_dir = re.sub(r'(\.content).*', r'\1', source_path)
                 os.makedirs(extract_dir, exist_ok=True)
                 extract_file = os.path.join(extract_dir, filename)
@@ -404,8 +410,13 @@ class PeakListWrapper:
                             f.write(stream.read())
                     else:
                         log(f'raw file already extracted, skipping extraction ({extract_file})')
+                except Exception as e:
+                    log(f'error extracting raw file from stream: {e}')
+                    raise e
                 finally:
                     lock.release()
+                    stream.close()
+
                 self.readers.append(RAWReader(self.context))
                 stream = extract_file
         else:
