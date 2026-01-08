@@ -120,11 +120,11 @@ def test_peaklist_wrapper(tmpdir):
     assert len(wrapper.readers) == 3
     # check test.mgf
     assert wrapper.readers[0].file_name == 'test.mgf'
-    assert wrapper.readers[0].source_path == os.path.join(tar_file, 'test.mgf')
+    assert wrapper.readers[0].source_path == os.path.join(tar_file + ".content", 'test.mgf')
     check_spectra_reader(wrapper.readers[0], test_mgf_expected)
     # check test2.mgf
     assert wrapper.readers[1].file_name == 'test2.mgf'
-    assert wrapper.readers[1].source_path == os.path.join(tar_file, 'test2.mgf')
+    assert wrapper.readers[1].source_path == os.path.join(tar_file + ".content", 'test2.mgf')
     check_spectra_reader(wrapper.readers[1], test2_mgf_expected)
     # check test3.mgf
     assert wrapper.readers[2].file_name == 'test3.mgf'
@@ -146,11 +146,11 @@ def test_peaklist_wrapper(tmpdir):
     assert len(wrapper.readers) == 3
     # check test.mgf
     assert wrapper.readers[0].file_name == 'test.mgf'
-    assert wrapper.readers[0].source_path == os.path.join(zip_file, 'test.mgf')
+    assert wrapper.readers[0].source_path == os.path.join(zip_file + ".content", 'test.mgf')
     check_spectra_reader(wrapper.readers[0], test_mgf_expected)
     # check test2.mgf
     assert wrapper.readers[1].file_name == 'test2.mgf'
-    assert wrapper.readers[1].source_path == os.path.join(zip_file, 'test2.mgf')
+    assert wrapper.readers[1].source_path == os.path.join(zip_file + ".content", 'test2.mgf')
     check_spectra_reader(wrapper.readers[1], test2_mgf_expected)
     # check test3.mgf
     assert wrapper.readers[2].file_name == 'test3.mgf'
@@ -164,10 +164,11 @@ def test_peaklist_wrapper(tmpdir):
     assert num_spectra == 4
     assert len(wrapper.readers) == 2
     assert wrapper.readers[0].file_name == 'test2.mgf'
-    assert wrapper.readers[0].source_path == os.path.join(subdir_tar_file, 'subdir', 'test2.mgf')
+    assert wrapper.readers[0].source_path == os.path.join(subdir_tar_file + ".content", 'subdir',
+                                                          'test2.mgf')
     check_spectra_reader(wrapper.readers[0], test2_mgf_expected)
     assert wrapper.readers[1].file_name == 'test.mgf'
-    assert wrapper.readers[1].source_path == os.path.join(subdir_tar_file, 'test.mgf')
+    assert wrapper.readers[1].source_path == os.path.join(subdir_tar_file + ".content", 'test.mgf')
     check_spectra_reader(wrapper.readers[1], test_mgf_expected)
 
     subdir_zip_file = os.path.join(fixtures_dir, 'subdir_test.zip')
@@ -176,10 +177,11 @@ def test_peaklist_wrapper(tmpdir):
     assert num_spectra == 4
     assert len(wrapper.readers) == 2
     assert wrapper.readers[0].file_name == 'test2.mgf'
-    assert wrapper.readers[0].source_path == os.path.join(subdir_zip_file, 'subdir', 'test2.mgf')
+    assert wrapper.readers[0].source_path == os.path.join(subdir_zip_file + ".content", 'subdir',
+                                                          'test2.mgf')
     check_spectra_reader(wrapper.readers[0], test2_mgf_expected)
     assert wrapper.readers[1].file_name == 'test.mgf'
-    assert wrapper.readers[1].source_path == os.path.join(subdir_zip_file, 'test.mgf')
+    assert wrapper.readers[1].source_path == os.path.join(subdir_zip_file + ".content", 'test.mgf')
     check_spectra_reader(wrapper.readers[1], test_mgf_expected)
 
     empty_dir = os.path.join(tmpdir, 'empty_dir')
@@ -679,11 +681,11 @@ def test_peaklist_wrapper_mixed_formats():
     assert len(wrapper.readers) == 2
     # check tiny.pwiz.1.1.mzML
     assert wrapper.readers[0].file_name == 'tiny.pwiz.1.1.mzML'
-    assert wrapper.readers[0].source_path == tar_file + os.sep + 'tiny.pwiz.1.1.mzML'
+    assert wrapper.readers[0].source_path == tar_file + ".content" + os.sep + 'tiny.pwiz.1.1.mzML'
     check_spectra_reader(wrapper.readers[0], test_tiny_mzml_expected)
     # check test.mgf
     assert wrapper.readers[1].file_name == 'test.mgf'
-    assert wrapper.readers[1].source_path == tar_file + os.sep + 'test.mgf'
+    assert wrapper.readers[1].source_path == tar_file + ".content" + os.sep + 'test.mgf'
     check_spectra_reader(wrapper.readers[1], test_mgf_expected)
 
     # test zip file containing test.mgf and tiny.pwiz.1.1.mzML
@@ -694,11 +696,11 @@ def test_peaklist_wrapper_mixed_formats():
     assert len(wrapper.readers) == 2
     # check tiny.pwiz.1.1.mzML
     assert wrapper.readers[0].file_name == 'tiny.pwiz.1.1.mzML'
-    assert wrapper.readers[0].source_path == zip_file + os.sep + 'tiny.pwiz.1.1.mzML'
+    assert wrapper.readers[0].source_path == zip_file + ".content" + os.sep + 'tiny.pwiz.1.1.mzML'
     check_spectra_reader(wrapper.readers[0], test_tiny_mzml_expected)
     # check test.mgf
     assert wrapper.readers[1].file_name == 'test.mgf'
-    assert wrapper.readers[1].source_path == zip_file + os.sep + 'test.mgf'
+    assert wrapper.readers[1].source_path == zip_file + ".content" + os.sep + 'test.mgf'
     check_spectra_reader(wrapper.readers[1], test_mgf_expected)
 
 
