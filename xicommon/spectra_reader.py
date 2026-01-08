@@ -36,6 +36,7 @@ from lxml.etree import XMLSyntaxError
 from .xi_logging import log
 from dirlock import DirLock
 
+
 class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',
                  source_path='', run_name='', scan_number=-1, scan_index=-1, title=''):
