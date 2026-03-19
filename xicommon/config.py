@@ -187,11 +187,27 @@ class ConfigMeta(type):
 
     def __new__(cls, name, bases, attributes):
         """Create a new instance."""
+        # if bases is not empty we are not creating the base ConfigGroup class
+        # but a subclass of it, so we need to do some processing of the
+        # attributes to extract the settings and defaults
+        if bases:
+            # iterate reversely over bases
+            for base in reversed(bases):
+                # if the base class is a ConfigGroup, we need to inherit the settings and defaults
+                if issubclass(base, ConfigGroup):
+                    # need to make sure that we don't overwrite settings and defaults of the
+                    # current class
+                    for k in base._settings:
+                        if k not in attributes:
+                            attributes[k] = base._settings[k]
+                    for k in base._defaults:
+                        if k not in attributes:
+                            attributes[k] = base._defaults[k]
         settings = {k: a for k, a in attributes.items() if isinstance(a, Setting)}
         others = {k: a for k, a in attributes.items() if k not in settings}
         defaults = {k: s.default for k, s in settings.items() if hasattr(s, 'default')}
         required = set([k for k, s in settings.items() if s.required])
-        new_attributes = dict(_settings=attributes, _defaults=defaults, _required=required,
+        new_attributes = dict(_settings=settings, _defaults=defaults, _required=required,
                               **others)
         return type.__new__(cls, name, bases, new_attributes)
 
@@ -237,12 +253,16 @@ class ConfigGroup(metaclass=ConfigMeta):
 
     def __getattr__(self, key):
         """Get the value for a Setting."""
-        if key.startswith('_') or key not in self._settings:
-            return super(ConfigGroup, self).__getattr__(key)
-        elif key in self._values:
-            return self._values[key]
+        if key.startswith('_'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
+        elif key in self._settings:
+            if key in self._values:
+                return self._values[key]
+            else:
+                raise AttributeError(key)
         else:
-            raise AttributeError(key)
+            # Not a Setting - let normal AttributeError propagate
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
 
     def __eq__(self, other):
         """Check if two ConfigGroups are equal."""
