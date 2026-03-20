@@ -820,3 +820,28 @@ class TestConfigWriter():
 
         assert crosslinker.to_dict() == crosslinker_reloaded.to_dict()
         assert crosslinker == crosslinker_reloaded
+
+
+def test_ext_config_with_new_settings():
+    """Test that ExtConfig extends Config with new ConfigGroup-typed settings."""
+
+    class TestChild(ConfigGroup):
+        bt = Setting(bool, default=True)
+
+    boolTest = TestChild
+
+    class ExtConfig(Config):
+        test = Setting(boolTest)
+        listTest = ListSetting(boolTest, default=[])
+
+    ext_config = ExtConfig(test=TestChild())
+
+    # ms1_tol from base Config should still be accessible
+    assert ext_config.ms1_tol == '3 ppm'
+
+    # new test setting should be accessible and hold a TestChild instance
+    assert isinstance(ext_config.test, TestChild)
+    assert ext_config.test.bt is True
+
+    # new listTest setting should be accessible and default to an empty list
+    assert ext_config.listTest == []
