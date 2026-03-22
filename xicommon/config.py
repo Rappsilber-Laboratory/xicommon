@@ -348,6 +348,10 @@ class ConfigGroup(metaclass=ConfigMeta):
         """Convert the ConfigGroup to a JSON string."""
         return json.dumps(self.to_dict(excl_defaults=excl_defaults))
 
+    def to_yaml(self, excl_defaults=True):
+        """Convert the ConfigGroup to a YAML string."""
+        return yaml.dump(self.to_dict(excl_defaults=excl_defaults))
+
     def write(self, file_name, excl_defaults=True):
         """Write the ConfigGroup to a JSON file."""
         with open(file_name, "w") as outfile:
@@ -1174,44 +1178,44 @@ class ConfigReader:
     """Config Reader class."""
 
     @classmethod
-    def load_file(cls, file_name):
+    def load_file(cls, file_name, config_cls=Config):
         """Open a file by filename and create a Config from it."""
         with open(file_name) as f:
             if file_name.lower().endswith('.json'):
-                return cls.load_json(f)
+                return cls.load_json(f, config_cls=config_cls)
             elif file_name.lower().endswith('.yaml') or file_name.lower().endswith('.yml'):
-                return cls.load_yaml(f)
+                return cls.load_yaml(f, config_cls=config_cls)
             else:
                 # Guess format
                 try:
-                    return cls.load_json(f)
+                    return cls.load_json(f, config_cls=config_cls)
                 except Exception:
-                    return cls.load_yaml(f)
+                    return cls.load_yaml(f, config_cls=config_cls)
 
     @classmethod
-    def load_json(cls, file_obj):
+    def load_json(cls, file_obj, config_cls=Config):
         """Create a Config from a JSON file."""
         settings = json.load(file_obj)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def load_yaml(cls, file_obj):
+    def load_yaml(cls, file_obj, config_cls=Config):
         """Create a Config from a YAML file."""
         settings = yaml.safe_load(file_obj)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def loads_json(cls, s):
+    def loads_json(cls, s, config_cls=Config):
         """Create a Config from a JSON string."""
         settings = json.loads(s)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def loads_yaml(cls, s):
+    def loads_yaml(cls, s, config_cls=Config):
         """Create a Config from a YAML string."""
         settings = yaml.safe_load(s)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
