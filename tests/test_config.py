@@ -825,7 +825,7 @@ class TestConfigWriter():
         """Test converting ConfigGroup to JSON string."""
         config = Config(isotope_error_ximpa=2, threads=4)
         json_str = config.to_json(excl_defaults=True)
-        
+
         # Verify it's valid JSON
         parsed = json.loads(json_str)
         assert parsed['isotope_error_ximpa'] == 2
@@ -839,7 +839,7 @@ class TestConfigWriter():
         """Test converting ConfigGroup with nested values to JSON string."""
         config = Config(ms1_tol='10 ppm', digestion=DigestionConfig(missed_cleavages=2))
         json_str = config.to_json(excl_defaults=True)
-        
+
         # Parse and verify
         parsed = json.loads(json_str)
         assert parsed['ms1_tol'] == '10 ppm'
@@ -852,7 +852,7 @@ class TestConfigWriter():
         """Test converting ConfigGroup to YAML string."""
         config = Config(isotope_error_ximpa=2, threads=4)
         yaml_str = config.to_yaml(excl_defaults=True)
-        
+
         # Verify it's valid YAML
         parsed = yaml.safe_load(yaml_str)
         assert parsed['isotope_error_ximpa'] == 2
@@ -863,10 +863,10 @@ class TestConfigWriter():
 
     def test_config_to_from_yaml_nested(self):
         """Test converting ConfigGroup with nested values to YAML string."""
-        config = Config(ms2_tol='20 ppm', 
-                       modification=ModificationConfig(max_var_protein_mods=4))
+        config = Config(ms2_tol='20 ppm',
+                        modification=ModificationConfig(max_var_protein_mods=4))
         yaml_str = config.to_yaml(excl_defaults=True)
-        
+
         # Parse and verify
         parsed = yaml.safe_load(yaml_str)
         assert parsed['ms2_tol'] == '20 ppm'
@@ -901,20 +901,23 @@ def test_ext_config_with_new_settings(tmpdir):
     # new listTest setting should be accessible and default to an empty list
     assert ext_config.listTest == []
 
-    extconfig_json_str = '{"ms1_tol": "10 ppm", "test": {"bt": true}, "listTest": [{"bt": true}, {"bt": false}]}'
+    extconfig_json_str = """{
+    "ms1_tol": "10 ppm",
+    "test": {"bt": true},
+    "listTest": [{"bt": true}, {"bt": false}]}"""
     ext_config_fj = ConfigReader.load_json(io.StringIO(extconfig_json_str), config_cls=ExtConfig)
-    assert ext_config_fj.listTest[0].bt == True
-    assert ext_config_fj.listTest[1].bt == False
-    assert ext_config_fj.test.bt is True
+    assert ext_config_fj.listTest[0].bt
+    assert not ext_config_fj.listTest[1].bt
+    assert ext_config_fj.test.bt
     assert ext_config_fj.ms1_tol == '10 ppm'
     # write out to json and read in again
     out_path = os.path.join(tmpdir, "ext_config.json")
     with open(out_path, 'w') as f:
         f.write(extconfig_json_str)
     ext_config_fj_reloaded = ConfigReader.load_file(out_path, config_cls=ExtConfig)
-    assert ext_config_fj_reloaded.listTest[0].bt == True
-    assert ext_config_fj_reloaded.listTest[1].bt == False
-    assert ext_config_fj_reloaded.test.bt is True
+    assert ext_config_fj_reloaded.listTest[0].bt
+    assert ext_config_fj_reloaded.listTest[1].bt is False
+    assert ext_config_fj_reloaded.test.bt
     assert ext_config_fj_reloaded.ms1_tol == '10 ppm'
     ext_config_str_yaml = yaml.dump(json.loads(extconfig_json_str))
     out_path_yaml = os.path.join(tmpdir, "ext_config.yaml")
@@ -922,7 +925,7 @@ def test_ext_config_with_new_settings(tmpdir):
         f.write(ext_config_str_yaml)
     # and as yaml
     ext_config_fj_reloaded_yaml = ConfigReader.load_file(out_path_yaml, config_cls=ExtConfig)
-    assert ext_config_fj_reloaded_yaml.listTest[0].bt == True
-    assert ext_config_fj_reloaded_yaml.listTest[1].bt == False
-    assert ext_config_fj_reloaded_yaml.test.bt is True
+    assert ext_config_fj_reloaded_yaml.listTest[0].bt
+    assert not ext_config_fj_reloaded_yaml.listTest[1].bt
+    assert ext_config_fj_reloaded_yaml.test.bt
     assert ext_config_fj_reloaded_yaml.ms1_tol == '10 ppm'
