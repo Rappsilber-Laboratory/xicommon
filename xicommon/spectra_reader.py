@@ -26,7 +26,11 @@ import ntpath
 import mmap
 from abc import ABC, abstractmethod
 import zipfile
-import zipfile_deflate64 as zipfile64
+try:
+    import zipfile_deflate64 as zipfile64
+except ImportError:
+    # fallback to standard zipfile if deflate64 is not available (e.g. build issues on macOS)
+    zipfile64 = zipfile
 import tarfile
 import io
 import os

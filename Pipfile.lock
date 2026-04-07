@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "05c80716257305587b0f4a51edce4b1b50296501def54ed5719eb29a57922f28"
+            "sha256": "18399beda56abc86bb619bfb9c3cc8747c73dc1028803eb65c4aaac2ed30c0a4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -252,13 +252,13 @@
         },
         "native-fisher-py": {
             "hashes": [
-                "sha256:29f0e5897dd582c4f9ce0bcd04dd203e55109d69a80f74592c0bc4e985ec19ae",
-                "sha256:609351dadcc4d7c43df573b7e272fb4d389dd35c70a5c28bac4abca9c484e485",
-                "sha256:f9f2e7dc8a8c5c476a0bcf148f6e50be827c82cceb648a8698f0edc4370d870e"
+                "sha256:22b74388147b08871bf9d0b5f2db5a5efc9d4d359a1357c51b5ae78c1e024361",
+                "sha256:b249d79c6aa18f1b98f227dc299b2fc7d6e5d1e8561bcf1ecc9fffc091330264",
+                "sha256:e243bf155b0e10f7f30fe288a96cced8a8b19a2268f96b9c677436f64a498a84"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==0.3.0"
+            "version": "==0.3.1"
         },
         "numpy": {
             "hashes": [
@@ -553,7 +553,7 @@
                 "sha256:f868343cd24bd3c66fbcba9316c6a970f934653bf3d0be89f25fa0335a7ea3ff"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.6'",
+            "markers": "sys_platform != 'darwin' or (sys_platform == 'darwin' and platform_machine != 'arm64')",
             "version": "==0.2.0"
         }
     },
