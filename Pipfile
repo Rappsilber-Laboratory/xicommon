@@ -16,7 +16,6 @@ termcolor = "*"
 pygments = "*"
 progress = "*"
 dirlock = "*"
-fisher-py = "*"
 pyyaml = "*"
 native-fisher-py = ">=0.3.0"
 
