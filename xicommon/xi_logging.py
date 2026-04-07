@@ -45,6 +45,27 @@ def log_enable(setting):
     _log_enabled = bool(setting)
 
 
+def log_queue_writer(queue, file):
+    """Function that will run as process receiving the log and writing it to a file."""
+    # create the parent folder of the log-file
+    parent_folder = os.path.dirname(file)
+    Path(parent_folder).mkdir(parents=True, exist_ok=True)
+    # open the output file
+    log_out = open(file, "a")
+
+    # start reading from queue
+    while True:
+        s = queue.get()
+        if s:
+            log_out.write(s)
+            log_out.write("\n")
+            log_out.flush()
+        else:
+            # take a False as an indication to close down the process
+            break
+    log_out.close()
+
+
 def log_file(file):
     """
     Define that the log should be writen out to a file.
@@ -57,35 +78,15 @@ def log_file(file):
 
     if isinstance(file, str):
         _log_file = True
-        if _log_queue is not None:
+        if _log_file_process is not None:
             # close down the old process
             _log_queue.put(False)
+            _log_file_process.join()
         _log_queue = Queue()
 
-        # function that will run as process receiving the log and writing it to a file
-        def log_queue_writer(queue):
-            # create the parent folder of the log-file
-            parent_folder = os.path.dirname(file)
-            Path(parent_folder).mkdir(parents=True, exist_ok=True)
-            # open the output file
-            log_out = open(file, "a")
-
-            # start reading from queue
-            while True:
-                s = queue.get()
-                if s:
-                    log_out.write(s)
-                    log_out.write("\n")
-                    log_out.flush()
-                else:
-                    # take a False as an indication to close down the process
-                    break
-            log_out.close()
-
         # start the log writer process
-        # TODO: fails on windows due to second level local function (log_queue_writer) cannot be
-        # pickled
-        _log_file_process = Process(target=log_queue_writer, args=(_log_queue,), daemon=True)
+        # log_queue_writer MUST be at module level to be picklable on macOS/Windows
+        _log_file_process = Process(target=log_queue_writer, args=(_log_queue, file), daemon=True)
         _log_file_process.start()
     elif isinstance(file, bool) and not file:
         _log_file = False
