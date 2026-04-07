@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6a5612c7090c4f0b5f452cea24a496fd7773eff01c29d20f0385579b87391a45"
+            "sha256": "ad70222d8615595d8a0827c8689c49fb7aee939febdca96423ff2488f020f1f1"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -352,6 +352,16 @@
             ],
             "index": "pypi",
             "version": "==1.0.3"
+        },
+        "native-fisher-py": {
+            "hashes": [
+                "sha256:29f0e5897dd582c4f9ce0bcd04dd203e55109d69a80f74592c0bc4e985ec19ae",
+                "sha256:609351dadcc4d7c43df573b7e272fb4d389dd35c70a5c28bac4abca9c484e485",
+                "sha256:f9f2e7dc8a8c5c476a0bcf148f6e50be827c82cceb648a8698f0edc4370d870e"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==0.3.0"
         },
         "numpy": {
             "hashes": [

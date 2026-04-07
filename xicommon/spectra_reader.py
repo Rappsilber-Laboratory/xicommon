@@ -753,15 +753,15 @@ class RAWReader(SpectraReader):
         """
         super().__init__(context)
         try:
-            from fisher_py.raw_file_reader import RawFileReaderAdapter
+            from native_fisher_py.raw_file_reader import RawFileReaderAdapter
             self.RawFileReaderAdapter = RawFileReaderAdapter
-            from fisher_py.data.filter_enums import MsOrderType
+            from native_fisher_py.data.filter_enums import MsOrderType
             self.MsOrderType = MsOrderType
-            from fisher_py.data import Device
+            from native_fisher_py.data import Device
             self.Device = Device
-        except Exception:
+        except Exception as e:
             log('RAW file initialisation failed - will not be able to read RAW files')
-            sys.exit(1)
+            raise e
 
     def load(self, source, file_name=None, source_path=None, offset=0, step=1):
         """

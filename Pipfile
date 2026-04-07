@@ -18,6 +18,7 @@ progress = "*"
 dirlock = "*"
 fisher-py = "*"
 pyyaml = "*"
+native-fisher-py = ">=0.3.0"
 
 [dev-packages]
 pytest = ">=3.6.4"
