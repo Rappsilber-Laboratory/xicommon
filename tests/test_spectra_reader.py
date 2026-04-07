@@ -139,6 +139,11 @@ def test_peaklist_wrapper(tmpdir):
     assert num_spectra == 6
     assert len(wrapper.readers) == 3
     # test the same file but as deflate64 compressed
+    if zipfile64 is zipfile:
+        # standard zipfile does not support Deflate64, so we skip this test part if zipfile64 is not
+        # available
+        pytest.skip("zipfile-deflate64 not installed")
+
     zip_file = os.path.join(fixtures_dir, 'test64.zip')
     wrapper.load([zip_file, pl_file])
     num_spectra = wrapper.count_spectra()

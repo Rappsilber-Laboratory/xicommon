@@ -34,7 +34,6 @@ except ImportError:
 import tarfile
 import io
 import os
-import sys
 from xicommon.cython import isin_set_long
 from lxml.etree import XMLSyntaxError
 from .xi_logging import log
