@@ -23,10 +23,31 @@ cimport cython
 from libc.string cimport memcmp
 from .compare_byte_ranges cimport byte_ranges_context, compare_byte_ranges
 
-# Declare the qsort_r function (it's not in the cython-supplied imports)
-cdef extern from "stdlib.h":
-    void qsort_r(void *base, int nmemb, size_t size,
-            int (*compar)(const void *, const void *, void *), void *arg)
+# Declare a portable qsort_r function (handling Apple/BSD and GLIBC differences)
+cdef extern from *:
+    """
+    #include <stdlib.h>
+    #ifdef __APPLE__
+    struct qsort_r_data {
+        void *arg;
+        int (*compar)(const void *, const void *, void *);
+    };
+    static int apple_qsort_r_compar_wrapper(void *thunk, const void *a, const void *b) {
+        struct qsort_r_data *data = (struct qsort_r_data *)thunk;
+        return data->compar(a, b, data->arg);
+    }
+    static inline void portable_qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg) {
+        struct qsort_r_data data = {arg, compar};
+        qsort_r(base, nmemb, size, &data, apple_qsort_r_compar_wrapper);
+    }
+    #else
+    static inline void portable_qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg) {
+        qsort_r(base, nmemb, size, compar, arg);
+    }
+    #endif
+    """
+    void portable_qsort_r(void *base, size_t nmemb, size_t size,
+            int (*compar)(const void *, const void *, void *), void *arg) nogil
 
 def argsort_byte_ranges(const np.uint8_t[:, :] src, const np.intp_t[:] src_indices,
                         const np.intp_t[:] starts, const np.intp_t[:] ends):
@@ -49,7 +70,7 @@ def argsort_byte_ranges(const np.uint8_t[:, :] src, const np.intp_t[:] src_indic
     cdef byte_ranges_context ctx = byte_ranges_context(src, src_indices, starts, ends)
 
     # Run quicksort
-    qsort_r(&order[0], num_inputs, sizeof(np.intp_t), compare_byte_ranges, <void *> ctx)
+    portable_qsort_r(&order[0], num_inputs, sizeof(np.intp_t), compare_byte_ranges, <void *> ctx)
 
     # Return sorted indices
     return order_ndarray
