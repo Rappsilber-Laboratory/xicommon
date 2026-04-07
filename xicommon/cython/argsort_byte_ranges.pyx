@@ -27,17 +27,26 @@ from .compare_byte_ranges cimport byte_ranges_context, compare_byte_ranges
 cdef extern from *:
     """
     #include <stdlib.h>
-    #ifdef __APPLE__
-    struct qsort_r_data {
+    struct portable_qsort_data {
         void *arg;
         int (*compar)(const void *, const void *, void *);
     };
-    static int apple_qsort_r_compar_wrapper(void *thunk, const void *a, const void *b) {
-        struct qsort_r_data *data = (struct qsort_r_data *)thunk;
+    #ifdef _WIN32
+    static int win_qsort_s_compar(void *context, const void *a, const void *b) {
+        struct portable_qsort_data *data = (struct portable_qsort_data *)context;
         return data->compar(a, b, data->arg);
     }
     static inline void portable_qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg) {
-        struct qsort_r_data data = {arg, compar};
+        struct portable_qsort_data data = {arg, compar};
+        qsort_s(base, nmemb, size, win_qsort_s_compar, &data);
+    }
+    #elif defined(__APPLE__)
+    static int apple_qsort_r_compar_wrapper(void *thunk, const void *a, const void *b) {
+        struct portable_qsort_data *data = (struct portable_qsort_data *)thunk;
+        return data->compar(a, b, data->arg);
+    }
+    static inline void portable_qsort_r(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *, void *), void *arg) {
+        struct portable_qsort_data data = {arg, compar};
         qsort_r(base, nmemb, size, &data, apple_qsort_r_compar_wrapper);
     }
     #else
