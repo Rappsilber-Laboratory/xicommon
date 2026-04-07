@@ -363,14 +363,14 @@ class PeakListWrapper:
                 for member in zip_f.infolist():
                     if not member.is_dir():
                         self._load(zip_f.open(member), member.filename,
-                                   peaklist_file + ".content" + os.sep + member.filename)
+                                   os.path.normpath(peaklist_file + ".content" + os.sep + member.filename))
             # check for tarfile
             elif tarfile.is_tarfile(peaklist_file):
                 tar_f = tarfile.open(peaklist_file)
                 for member in tar_f.getmembers():
                     if not member.isdir():
                         self._load(tar_f.extractfile(member), member.name,
-                                   peaklist_file + ".content" + os.sep + member.path)
+                                   os.path.normpath(peaklist_file + ".content" + os.sep + member.path))
             # else load file
             else:
                 self._load(peaklist_file, peaklist_file)
