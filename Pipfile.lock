@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "18399beda56abc86bb619bfb9c3cc8747c73dc1028803eb65c4aaac2ed30c0a4"
+            "sha256": "b4602cedb71577abb78403afb6c87da6bbe4a872ba4a3d06cbe9036abe9d216e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -534,27 +534,9 @@
             "version": "==2026.1"
         },
         "zipfile-deflate64": {
-            "hashes": [
-                "sha256:2096cc9c2a896436ffb27e2cfff60402ca4304b1fbe782265a8c1b2d11dc598a",
-                "sha256:3f7b5f3305880a784e335c9fa1bc33a6a3a8436cdbf3e473690f4da0eb866645",
-                "sha256:5b9e0a0d5d742aa4006ab18d31eabc9a83809be3d27dad34707fa136cafa0950",
-                "sha256:5ed1c3edc08e8da8fe646b23105e2840f305ce2a75360aa0df7523c1263f43aa",
-                "sha256:6c79e8d3356eb72b9be25bcc36ce3320cbe1f50606f355193d6ad8ead8130fd5",
-                "sha256:84432465d0c497c774122073b79ec7fa9ebf28cf066cce5f1a5726dad455086f",
-                "sha256:875a3299de102edf1c17f8cafcc528b1ca80b62dc4814b9cb56867ec59fbfd18",
-                "sha256:a16cd144c12de642f0ace1aeab7f50e7abc7492c81381faa2b17cc36f38272c4",
-                "sha256:a8557a77c2b6ee8afb49759d9b4c1a9785ca05366cbc4b2c577a859ecba62b85",
-                "sha256:b1b4ab8d83bb277983ff273cbf4fcf831023abbc2303f90af9dd4bde3ab4b9c2",
-                "sha256:cc673ff44f1e7fa673b34507d04e6e0b750be372e4f33e40a9364858ef22411f",
-                "sha256:d6bb582256f374f5a8570616480f07df0d74460b8c80aaa5fb047a73ff38bcd2",
-                "sha256:dadfdd07f15c0abf394e0599b06a894120ca6f40ded9720c68b267a4ecf8bf48",
-                "sha256:f30f7981689dcf06e2789a2adbf3ff0711e58a710780205c2747ec793373fa2e",
-                "sha256:f5313c31e92a8be7e0fed7648b553f041287715d7a28fbfbbadec1dd8e7b773b",
-                "sha256:f868343cd24bd3c66fbcba9316c6a970f934653bf3d0be89f25fa0335a7ea3ff"
-            ],
-            "index": "pypi",
-            "markers": "sys_platform != 'darwin' or (sys_platform == 'darwin' and platform_machine != 'arm64')",
-            "version": "==0.2.0"
+            "git": "https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git",
+            "markers": "python_version >= '3.6'",
+            "ref": "313657a08419950ea5df7d662862c2907f9df79d"
         }
     },
     "develop": {
@@ -935,12 +917,12 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b",
-                "sha256:75186651a92bd89611d1d9fc20f0b4345fd827c41ccd5c299a868a05d70edf11"
+                "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9",
+                "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==9.0.2"
+            "version": "==9.0.3"
         },
         "pytest-cov": {
             "hashes": [

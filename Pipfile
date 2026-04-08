@@ -10,7 +10,7 @@ numpy = ">=1.20,<2.0"
 pandas = ">=1.1.0"
 cython = ">=3.0.0,<3.1.0"
 lxml = "*"
-zipfile-deflate64 = "*"
+zipfile-deflate64 = {git = "https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git"}
 memoized-property = "*"
 termcolor = "*"
 pygments = "*"
