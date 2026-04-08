@@ -42,8 +42,8 @@ def test_isotope_detector_return_new_spectrum():
     assert new_spec != spectrum
     # check that these arrays actually share the same memory, that
     # pointers point at the same arrays
-    assert np.byte_bounds(new_spec.mz_values) == np.byte_bounds(spectrum.mz_values)
-    assert np.byte_bounds(new_spec.int_values) == np.byte_bounds(spectrum.int_values)
+    assert np.lib.array_utils.byte_bounds(new_spec.mz_values) == np.lib.array_utils.byte_bounds(spectrum.mz_values)
+    assert np.lib.array_utils.byte_bounds(new_spec.int_values) == np.lib.array_utils.byte_bounds(spectrum.int_values)
 
 
 def test_simple_isotope_detector():
