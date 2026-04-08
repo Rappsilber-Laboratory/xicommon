@@ -26,6 +26,8 @@ from xicommon.mass import aa_masses, ion_mass
 from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy, memset
 
+np.import_array()
+
 cdef packed struct crange_dtype:
     np.uint8_t r_from
     np.uint8_t r_to

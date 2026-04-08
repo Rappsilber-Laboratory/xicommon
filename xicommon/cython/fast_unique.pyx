@@ -49,7 +49,7 @@ def fast_unique(array, return_index=False, return_inverse=False,
     cdef size_t stride = array.strides[0]
     cdef size_t itemsize = array.itemsize
     if array.ndim > 1:
-        itemsize *= np.product(array.shape[1:])
+        itemsize *= np.prod(array.shape[1:])
     cdef np.intp_t[::1] order_view
     diff_ndarray = np.empty(length, bool)
     cdef np.uint8_t[::1] diff_view = diff_ndarray
