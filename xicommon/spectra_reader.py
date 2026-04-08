@@ -40,9 +40,12 @@ from lxml.etree import XMLSyntaxError
 from .xi_logging import log
 from dirlock import DirLock
 
+
 def _archive_member_path(member_name: str) -> str:
-    # tar/zip store names as POSIX paths ("/") even on Windows, to solve the windows test issue!
+    # tar/zip store names as POSIX paths ("/") even on Windows,
+    # to solve the windows test issue!
     return str(Path(*PurePosixPath(member_name).parts))
+
 
 class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',

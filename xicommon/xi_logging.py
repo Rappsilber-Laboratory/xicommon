@@ -98,9 +98,17 @@ def log_file(file, threaded=False):
         # start the log writer process
         # log_queue_writer MUST be at module level to be picklable on macOS/Windows
         if threaded:
-            _log_file_process = threading.Thread(target=log_queue_writer, args=(_log_queue, file), daemon=True)
+            _log_file_process = threading.Thread(
+                target=log_queue_writer,
+                args=(_log_queue, file),
+                daemon=True
+            )
         else:
-            _log_file_process = Process(target=log_queue_writer, args=(_log_queue, file), daemon=True)
+            _log_file_process = Process(
+                target=log_queue_writer,
+                args=(_log_queue, file),
+                daemon=True
+            )
         _log_file_process.start()
     elif isinstance(file, bool) and not file:
         _log_file = False
