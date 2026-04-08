@@ -34,11 +34,15 @@ except ImportError:
 import tarfile
 import io
 import os
+from pathlib import Path, PurePosixPath
 from xicommon.cython import isin_set_long
 from lxml.etree import XMLSyntaxError
 from .xi_logging import log
 from dirlock import DirLock
 
+def _archive_member_path(member_name: str) -> str:
+    # tar/zip store names as POSIX paths ("/") even on Windows, to solve the windows test issue!
+    return str(Path(*PurePosixPath(member_name).parts))
 
 class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',
@@ -362,16 +366,18 @@ class PeakListWrapper:
 
                 for member in zip_f.infolist():
                     if not member.is_dir():
+                        member_path = _archive_member_path(member.filename)
                         source_path = os.path.normpath(peaklist_file + ".content" + os.sep
-                                                       + member.filename)
+                                                       + member_path)
                         self._load(zip_f.open(member), member.filename, source_path)
             # check for tarfile
             elif tarfile.is_tarfile(peaklist_file):
                 tar_f = tarfile.open(peaklist_file)
                 for member in tar_f.getmembers():
                     if not member.isdir():
+                        member_path = _archive_member_path(member.name)
                         source_path = os.path.normpath(peaklist_file + ".content" + os.sep
-                                                       + member.path)
+                                                       + member_path)
                         self._load(tar_f.extractfile(member), member.name, source_path)
             # else load file
             else:
