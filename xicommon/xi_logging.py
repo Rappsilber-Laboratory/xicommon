@@ -19,6 +19,8 @@
 from time import time
 from progress.bar import Bar
 from multiprocessing import Queue, Process
+import queue as Q
+import threading
 import os
 from pathlib import Path
 
@@ -49,28 +51,34 @@ def log_queue_writer(queue, file):
     """Function that will run as process receiving the log and writing it to a file."""
     # create the parent folder of the log-file
     parent_folder = os.path.dirname(file)
-    Path(parent_folder).mkdir(parents=True, exist_ok=True)
+    if parent_folder:
+        Path(parent_folder).mkdir(parents=True, exist_ok=True)
     # open the output file
-    log_out = open(file, "a")
+    with open(file, "a", encoding="utf-8") as log_out:
+        # start reading from queue
+        while True:
+            s = queue.get()
+            if s:
+                log_out.write(s)
+                log_out.write("\n")
+                log_out.flush()
+            else:
+                # take a False as an indication to close down the process
+                log_out.write("Stopping log writer process\n")
+                log_out.flush()
+                if hasattr(queue, "close"):
+                    queue.close()
+                if hasattr(queue, "join_thread"):
+                    queue.join_thread()
+                break
 
-    # start reading from queue
-    while True:
-        s = queue.get()
-        if s:
-            log_out.write(s)
-            log_out.write("\n")
-            log_out.flush()
-        else:
-            # take a False as an indication to close down the process
-            break
-    log_out.close()
 
-
-def log_file(file):
+def log_file(file, threaded=False):
     """
     Define that the log should be writen out to a file.
 
     :param file - (str,False) if a string then it defines the output path; if False disables writing
+    :param threaded - (bool) if True uses a thread instead of a process for writing
     """
     global _log_file
     global _log_queue
@@ -82,11 +90,17 @@ def log_file(file):
             # close down the old process
             _log_queue.put(False)
             _log_file_process.join()
-        _log_queue = Queue()
+        if threaded:
+            _log_queue = Q.Queue()
+        else:
+            _log_queue = Queue()
 
         # start the log writer process
         # log_queue_writer MUST be at module level to be picklable on macOS/Windows
-        _log_file_process = Process(target=log_queue_writer, args=(_log_queue, file), daemon=True)
+        if threaded:
+            _log_file_process = threading.Thread(target=log_queue_writer, args=(_log_queue, file), daemon=True)
+        else:
+            _log_file_process = Process(target=log_queue_writer, args=(_log_queue, file), daemon=True)
         _log_file_process.start()
     elif isinstance(file, bool) and not file:
         _log_file = False
