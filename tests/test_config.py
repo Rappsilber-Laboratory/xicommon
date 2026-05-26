@@ -929,3 +929,54 @@ def test_ext_config_with_new_settings(tmpdir):
     assert not ext_config_fj_reloaded_yaml.listTest[1].bt
     assert ext_config_fj_reloaded_yaml.test.bt
     assert ext_config_fj_reloaded_yaml.ms1_tol == '10 ppm'
+
+
+def test_config_overright_setting():
+
+    class ExtConfig(Config):
+        isotope_error_ximpa = Setting(float, 5.5)
+
+    ext_config = ExtConfig()
+
+    assert ext_config.isotope_error_ximpa == 5.5
+
+
+def test_config_inheritence_order():
+
+    class ParentConfig(Config):
+        setting1 = Setting(int, 1)
+        setting2 = Setting(int, 2)
+
+
+    class ChildConfig(ParentConfig):
+        setting2 = Setting(int, 3)
+        setting3 = Setting(int, 4)
+
+    child_config = ChildConfig()
+    assert child_config.setting1 == 1
+    assert child_config.setting2 == 3
+    assert child_config.setting3 == 4
+
+    class GrandChildConfig(ChildConfig):
+        setting3 = Setting(int, 5)
+        setting4 = Setting(int, 6)
+    grandchild_config = GrandChildConfig()
+    assert grandchild_config.setting1 == 1
+    assert grandchild_config.setting2 == 3
+    assert grandchild_config.setting3 == 5
+    assert grandchild_config.setting4 == 6
+
+    class Child2Config(ParentConfig):
+        setting2 = Setting(int, 20)
+
+    # in case of multiple inheritance, the order of the parents 
+    # should determine the order of the settings
+    # i.e. here the most left child of setting3 should be the one that is used
+    class GrandChild2Config(Child2Config, ChildConfig):
+        setting3 = Setting(int, 30)
+
+    grandchild2_config = GrandChild2Config()
+    assert grandchild2_config.setting1 == 1
+    assert grandchild2_config.setting2 == 20
+    assert grandchild2_config.setting3 == 30
+

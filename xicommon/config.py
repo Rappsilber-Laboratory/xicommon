@@ -192,7 +192,7 @@ class ConfigMeta(type):
         # attributes to extract the settings and defaults
         if bases:
             # iterate reversely over bases
-            for base in reversed(bases):
+            for base in bases:
                 # if the base class is a ConfigGroup, we need to inherit the settings and defaults
                 if issubclass(base, ConfigGroup):
                     # need to make sure that we don't overwrite settings and defaults of the
