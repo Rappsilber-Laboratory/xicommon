@@ -820,3 +820,163 @@ class TestConfigWriter():
 
         assert crosslinker.to_dict() == crosslinker_reloaded.to_dict()
         assert crosslinker == crosslinker_reloaded
+
+    def test_config_to_from_json(self):
+        """Test converting ConfigGroup to JSON string."""
+        config = Config(isotope_error_ximpa=2, threads=4)
+        json_str = config.to_json(excl_defaults=True)
+
+        # Verify it's valid JSON
+        parsed = json.loads(json_str)
+        assert parsed['isotope_error_ximpa'] == 2
+        assert parsed['threads'] == 4
+        config_reloaded = Config.from_json(json_str)
+        assert isinstance(config_reloaded, Config)
+        assert config_reloaded.isotope_error_ximpa == 2
+        assert config_reloaded.threads == 4
+
+    def test_config_to_from_json_nested(self):
+        """Test converting ConfigGroup with nested values to JSON string."""
+        config = Config(ms1_tol='10 ppm', digestion=DigestionConfig(missed_cleavages=2))
+        json_str = config.to_json(excl_defaults=True)
+
+        # Parse and verify
+        parsed = json.loads(json_str)
+        assert parsed['ms1_tol'] == '10 ppm'
+        assert parsed['digestion']['missed_cleavages'] == 2
+        config_reloaded = Config.from_json(json_str)
+        assert config_reloaded.ms1_tol == '10 ppm'
+        assert config_reloaded.digestion.missed_cleavages == 2
+
+    def test_config_to_from_yaml(self):
+        """Test converting ConfigGroup to YAML string."""
+        config = Config(isotope_error_ximpa=2, threads=4)
+        yaml_str = config.to_yaml(excl_defaults=True)
+
+        # Verify it's valid YAML
+        parsed = yaml.safe_load(yaml_str)
+        assert parsed['isotope_error_ximpa'] == 2
+        assert parsed['threads'] == 4
+        config_reloaded = Config.from_yaml(yaml_str)
+        assert config_reloaded.isotope_error_ximpa == 2
+        assert config_reloaded.threads == 4
+
+    def test_config_to_from_yaml_nested(self):
+        """Test converting ConfigGroup with nested values to YAML string."""
+        config = Config(ms2_tol='20 ppm',
+                        modification=ModificationConfig(max_var_protein_mods=4))
+        yaml_str = config.to_yaml(excl_defaults=True)
+
+        # Parse and verify
+        parsed = yaml.safe_load(yaml_str)
+        assert parsed['ms2_tol'] == '20 ppm'
+        assert parsed['modification']['max_var_protein_mods'] == 4
+
+        config_reloaded = Config.from_yaml(yaml_str)
+        assert config_reloaded.ms2_tol == '20 ppm'
+        assert config_reloaded.modification.max_var_protein_mods == 4
+
+
+def test_ext_config_with_new_settings(tmpdir):
+    """Test that ExtConfig extends Config with new ConfigGroup-typed settings."""
+
+    class TestChild(ConfigGroup):
+        bt = Setting(bool, default=True)
+
+    boolTest = TestChild
+
+    class ExtConfig(Config):
+        test = Setting(boolTest)
+        listTest = ListSetting(boolTest, default=[])
+
+    ext_config = ExtConfig(test=TestChild())
+
+    # ms1_tol from base Config should still be accessible
+    assert ext_config.ms1_tol == '3 ppm'
+
+    # new test setting should be accessible and hold a TestChild instance
+    assert isinstance(ext_config.test, TestChild)
+    assert ext_config.test.bt is True
+
+    # new listTest setting should be accessible and default to an empty list
+    assert ext_config.listTest == []
+
+    extconfig_json_str = """{
+    "ms1_tol": "10 ppm",
+    "test": {"bt": true},
+    "listTest": [{"bt": true}, {"bt": false}]}"""
+    ext_config_fj = ConfigReader.load_json(io.StringIO(extconfig_json_str), config_cls=ExtConfig)
+    assert ext_config_fj.listTest[0].bt
+    assert not ext_config_fj.listTest[1].bt
+    assert ext_config_fj.test.bt
+    assert ext_config_fj.ms1_tol == '10 ppm'
+    # write out to json and read in again
+    out_path = os.path.join(tmpdir, "ext_config.json")
+    with open(out_path, 'w') as f:
+        f.write(extconfig_json_str)
+    ext_config_fj_reloaded = ConfigReader.load_file(out_path, config_cls=ExtConfig)
+    assert ext_config_fj_reloaded.listTest[0].bt
+    assert ext_config_fj_reloaded.listTest[1].bt is False
+    assert ext_config_fj_reloaded.test.bt
+    assert ext_config_fj_reloaded.ms1_tol == '10 ppm'
+    ext_config_str_yaml = yaml.dump(json.loads(extconfig_json_str))
+    out_path_yaml = os.path.join(tmpdir, "ext_config.yaml")
+    with open(out_path_yaml, 'w') as f:
+        f.write(ext_config_str_yaml)
+    # and as yaml
+    ext_config_fj_reloaded_yaml = ConfigReader.load_file(out_path_yaml, config_cls=ExtConfig)
+    assert ext_config_fj_reloaded_yaml.listTest[0].bt
+    assert not ext_config_fj_reloaded_yaml.listTest[1].bt
+    assert ext_config_fj_reloaded_yaml.test.bt
+    assert ext_config_fj_reloaded_yaml.ms1_tol == '10 ppm'
+
+
+def test_config_overright_setting():
+
+    class ExtConfig(Config):
+        isotope_error_ximpa = Setting(float, 5.5)
+
+    ext_config = ExtConfig()
+
+    assert ext_config.isotope_error_ximpa == 5.5
+
+
+def test_config_inheritence_order():
+
+    class ParentConfig(Config):
+        setting1 = Setting(int, 1)
+        setting2 = Setting(int, 2)
+
+
+    class ChildConfig(ParentConfig):
+        setting2 = Setting(int, 3)
+        setting3 = Setting(int, 4)
+
+    child_config = ChildConfig()
+    assert child_config.setting1 == 1
+    assert child_config.setting2 == 3
+    assert child_config.setting3 == 4
+
+    class GrandChildConfig(ChildConfig):
+        setting3 = Setting(int, 5)
+        setting4 = Setting(int, 6)
+    grandchild_config = GrandChildConfig()
+    assert grandchild_config.setting1 == 1
+    assert grandchild_config.setting2 == 3
+    assert grandchild_config.setting3 == 5
+    assert grandchild_config.setting4 == 6
+
+    class Child2Config(ParentConfig):
+        setting2 = Setting(int, 20)
+
+    # in case of multiple inheritance, the order of the parents 
+    # should determine the order of the settings
+    # i.e. here the most left child of setting3 should be the one that is used
+    class GrandChild2Config(Child2Config, ChildConfig):
+        setting3 = Setting(int, 30)
+
+    grandchild2_config = GrandChild2Config()
+    assert grandchild2_config.setting1 == 1
+    assert grandchild2_config.setting2 == 20
+    assert grandchild2_config.setting3 == 30
+
