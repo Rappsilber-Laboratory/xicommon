@@ -89,7 +89,8 @@ def log_file(file, threaded=False):
         if _log_file_process is not None:
             # close down the old process
             _log_queue.put(False)
-            _log_file_process.join()
+            _log_file_process.join(30)
+            _log_file_process = None
         if threaded:
             _log_queue = Q.Queue()
         else:
