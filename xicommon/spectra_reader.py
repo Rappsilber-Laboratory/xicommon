@@ -773,9 +773,9 @@ class RAWReader(SpectraReader):
             self.MsOrderType = MsOrderType
             from native_fisher_py.data import Device
             self.Device = Device
-        except Exception as e:
+        except Exception:
             log('RAW file initialisation failed - will not be able to read RAW files')
-            raise e
+            raise
 
     def load(self, source, file_name=None, source_path=None, offset=0, step=1):
         """
