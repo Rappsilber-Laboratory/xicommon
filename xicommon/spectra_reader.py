@@ -26,15 +26,25 @@ import ntpath
 import mmap
 from abc import ABC, abstractmethod
 import zipfile
-import zipfile_deflate64 as zipfile64
+try:
+    import zipfile_deflate64 as zipfile64
+except ImportError:
+    # fallback to standard zipfile if deflate64 is not available (e.g. build issues on macOS)
+    zipfile64 = zipfile
 import tarfile
 import io
 import os
-import sys
+from pathlib import Path, PurePosixPath
 from xicommon.cython import isin_set_long
 from lxml.etree import XMLSyntaxError
 from .xi_logging import log
 from dirlock import DirLock
+
+
+def _archive_member_path(member_name: str) -> str:
+    # tar/zip store names as POSIX paths ("/") even on Windows,
+    # to solve the windows test issue!
+    return str(Path(*PurePosixPath(member_name).parts))
 
 
 class Spectrum:
@@ -359,15 +369,19 @@ class PeakListWrapper:
 
                 for member in zip_f.infolist():
                     if not member.is_dir():
-                        self._load(zip_f.open(member), member.filename,
-                                   peaklist_file + ".content" + os.sep + member.filename)
+                        member_path = _archive_member_path(member.filename)
+                        source_path = os.path.normpath(peaklist_file + ".content" + os.sep
+                                                       + member_path)
+                        self._load(zip_f.open(member), member.filename, source_path)
             # check for tarfile
             elif tarfile.is_tarfile(peaklist_file):
                 tar_f = tarfile.open(peaklist_file)
                 for member in tar_f.getmembers():
                     if not member.isdir():
-                        self._load(tar_f.extractfile(member), member.name,
-                                   peaklist_file + ".content" + os.sep + member.path)
+                        member_path = _archive_member_path(member.name)
+                        source_path = os.path.normpath(peaklist_file + ".content" + os.sep
+                                                       + member_path)
+                        self._load(tar_f.extractfile(member), member.name, source_path)
             # else load file
             else:
                 self._load(peaklist_file, peaklist_file)
@@ -753,15 +767,15 @@ class RAWReader(SpectraReader):
         """
         super().__init__(context)
         try:
-            from fisher_py.raw_file_reader import RawFileReaderAdapter
+            from native_fisher_py.raw_file_reader import RawFileReaderAdapter
             self.RawFileReaderAdapter = RawFileReaderAdapter
-            from fisher_py.data.filter_enums import MsOrderType
+            from native_fisher_py.data.filter_enums import MsOrderType
             self.MsOrderType = MsOrderType
-            from fisher_py.data import Device
+            from native_fisher_py.data import Device
             self.Device = Device
         except Exception:
             log('RAW file initialisation failed - will not be able to read RAW files')
-            sys.exit(1)
+            raise
 
     def load(self, source, file_name=None, source_path=None, offset=0, step=1):
         """

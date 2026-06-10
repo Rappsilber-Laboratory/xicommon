@@ -947,7 +947,6 @@ def test_config_inheritence_order():
         setting1 = Setting(int, 1)
         setting2 = Setting(int, 2)
 
-
     class ChildConfig(ParentConfig):
         setting2 = Setting(int, 3)
         setting3 = Setting(int, 4)
@@ -969,7 +968,7 @@ def test_config_inheritence_order():
     class Child2Config(ParentConfig):
         setting2 = Setting(int, 20)
 
-    # in case of multiple inheritance, the order of the parents 
+    # in case of multiple inheritance, the order of the parents
     # should determine the order of the settings
     # i.e. here the most left child of setting3 should be the one that is used
     class GrandChild2Config(Child2Config, ChildConfig):
@@ -979,4 +978,3 @@ def test_config_inheritence_order():
     assert grandchild2_config.setting1 == 1
     assert grandchild2_config.setting2 == 20
     assert grandchild2_config.setting3 == 30
-

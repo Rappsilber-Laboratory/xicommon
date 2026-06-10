@@ -53,9 +53,9 @@ cdef int compare_byte_ranges(const void *a, const void *b, void *arg) noexcept:
     cdef np.intp_t b_len = ctx.ends[bi] - ctx.starts[bi]
 
     # Compare the bytes of the two sequences, up to their minimum common length
-    cdef bint memcmp_result = memcmp(&ctx.src[ctx.src_indices[ai], ctx.starts[ai]],
-                                     &ctx.src[ctx.src_indices[bi], ctx.starts[bi]],
-                                     min(a_len, b_len))
+    cdef int memcmp_result = memcmp(&ctx.src[ctx.src_indices[ai], ctx.starts[ai]],
+                                    &ctx.src[ctx.src_indices[bi], ctx.starts[bi]],
+                                    min(a_len, b_len))
     if memcmp_result == 0:
         # One sequence is a prefix of the other - the shorter one comes first
         return a_len - b_len

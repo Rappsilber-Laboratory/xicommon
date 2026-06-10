@@ -85,7 +85,7 @@ ctypedef fused set_types:
     double
 
 
-def isin_set_long(long[:] elements, long[:] test_elements):
+def isin_set_long(np.int64_t[:] elements, np.int64_t[:] test_elements):
     """
     Check which elements in the first vector are found in the second vector.
 
@@ -96,7 +96,7 @@ def isin_set_long(long[:] elements, long[:] test_elements):
     :return: (ndarray[bool]) - boolean array indicating which numbers in the elements array are
     also in the test_elements array (True: present; False: not present)
     """
-    cdef unordered_set[long] test_set
+    cdef unordered_set[np.int64_t] test_set
     cdef np.ndarray return_list_array = np.empty(elements.shape[0], dtype=np.bool_)
     cdef np.npy_bool[:] return_list = return_list_array
     cdef int e
@@ -215,7 +215,7 @@ def isin_set(set_types[:] elements, set_types[:] test_elements):
 
     return return_list_array
 
-def isin_set_long_in_ushort(long[:] elements, unsigned short[:] test_elements):
+def isin_set_long_in_ushort(np.int64_t[:] elements, unsigned short[:] test_elements):
     """
     Check which elements in the first vector are found in the second vector.
 
@@ -226,7 +226,7 @@ def isin_set_long_in_ushort(long[:] elements, unsigned short[:] test_elements):
     :return: (ndarray[bool]) - boolean array indicating which numbers in the elements array are
     also in the test_elements array (True: present; False: not present)
     """
-    cdef unordered_set[long] test_set
+    cdef unordered_set[np.int64_t] test_set
     cdef np.ndarray return_list_array = np.empty(elements.shape[0], dtype=np.bool_)
     cdef np.npy_bool[:] return_list = return_list_array
     cdef int e

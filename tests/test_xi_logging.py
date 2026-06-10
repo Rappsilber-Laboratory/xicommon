@@ -36,8 +36,11 @@ def test_logging(tmpdir, capsys):
         log_file(123)
 
     log_file(str(out_file))
-    # give time to create the file
-    time.sleep(1)
+    # give time to create the file (up to 5 seconds)
+    for _ in range(50):
+        if os.path.exists(out_file):
+            break
+        time.sleep(0.1)
     # file was created
     assert os.path.exists(out_file)
     # enable logging to stdout

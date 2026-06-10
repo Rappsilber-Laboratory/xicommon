@@ -22,6 +22,8 @@ cimport numpy as np
 cimport cython
 from libc.string cimport memcpy
 
+np.import_array()
+
 def inplace_reorder(array, indices):
     """
     Reorder the first or only axis of 'array' into the order given by 'indices', without
@@ -43,7 +45,7 @@ def inplace_reorder(array, indices):
     cdef size_t stride = array.strides[0]
     cdef size_t itemsize = array.itemsize
     if array.ndim > 1:
-        itemsize *= np.product(array.shape[1:])
+        itemsize *= np.prod(array.shape[1:])
     cdef np.intp_t[::1] indices_view = indices
     cdef np.uint8_t[::1] tmp = np.empty(itemsize, np.uint8)
     cdef np.intp_t i, j, k

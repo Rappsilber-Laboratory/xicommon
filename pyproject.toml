@@ -18,7 +18,7 @@ dependencies = [
     "pyteomics.cythonize>=0.2.2",
 
     # Numerical and data processing
-    "numpy>=1.20,<2.0",
+    "numpy>=2.0",
     "pandas>=1.1.0",
 
     # Performance optimization
@@ -28,7 +28,7 @@ dependencies = [
     "lxml",
 
     # Compression support
-    "zipfile-deflate64",
+    "zipfile-deflate64 @ git+https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git",
 
     # Utilities
     "memoized-property",
@@ -36,7 +36,7 @@ dependencies = [
     "pygments",
     "progress",
     "dirlock",
-    "fisher-py",
+    "native-fisher-py>=0.3.0",
     "pyyaml",
 ]
 
