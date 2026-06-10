@@ -187,11 +187,27 @@ class ConfigMeta(type):
 
     def __new__(cls, name, bases, attributes):
         """Create a new instance."""
+        # if bases is not empty we are not creating the base ConfigGroup class
+        # but a subclass of it, so we need to do some processing of the
+        # attributes to extract the settings and defaults
+        if bases:
+            # iterate reversely over bases
+            for base in bases:
+                # if the base class is a ConfigGroup, we need to inherit the settings and defaults
+                if issubclass(base, ConfigGroup):
+                    # need to make sure that we don't overwrite settings and defaults of the
+                    # current class
+                    for k in base._settings:
+                        if k not in attributes:
+                            attributes[k] = base._settings[k]
+                    for k in base._defaults:
+                        if k not in attributes:
+                            attributes[k] = base._defaults[k]
         settings = {k: a for k, a in attributes.items() if isinstance(a, Setting)}
         others = {k: a for k, a in attributes.items() if k not in settings}
         defaults = {k: s.default for k, s in settings.items() if hasattr(s, 'default')}
         required = set([k for k, s in settings.items() if s.required])
-        new_attributes = dict(_settings=attributes, _defaults=defaults, _required=required,
+        new_attributes = dict(_settings=settings, _defaults=defaults, _required=required,
                               **others)
         return type.__new__(cls, name, bases, new_attributes)
 
@@ -237,12 +253,16 @@ class ConfigGroup(metaclass=ConfigMeta):
 
     def __getattr__(self, key):
         """Get the value for a Setting."""
-        if key.startswith('_') or key not in self._settings:
-            return super(ConfigGroup, self).__getattr__(key)
-        elif key in self._values:
-            return self._values[key]
+        if key.startswith('_'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
+        elif key in self._settings:
+            if key in self._values:
+                return self._values[key]
+            else:
+                raise AttributeError(key)
         else:
-            raise AttributeError(key)
+            # Not a Setting - let normal AttributeError propagate
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
 
     def __eq__(self, other):
         """Check if two ConfigGroups are equal."""
@@ -327,6 +347,10 @@ class ConfigGroup(metaclass=ConfigMeta):
     def to_json(self, excl_defaults=True):
         """Convert the ConfigGroup to a JSON string."""
         return json.dumps(self.to_dict(excl_defaults=excl_defaults))
+
+    def to_yaml(self, excl_defaults=True):
+        """Convert the ConfigGroup to a YAML string."""
+        return yaml.dump(self.to_dict(excl_defaults=excl_defaults))
 
     def write(self, file_name, excl_defaults=True):
         """Write the ConfigGroup to a JSON file."""
@@ -1154,44 +1178,44 @@ class ConfigReader:
     """Config Reader class."""
 
     @classmethod
-    def load_file(cls, file_name):
+    def load_file(cls, file_name, config_cls=Config):
         """Open a file by filename and create a Config from it."""
         with open(file_name) as f:
             if file_name.lower().endswith('.json'):
-                return cls.load_json(f)
+                return cls.load_json(f, config_cls=config_cls)
             elif file_name.lower().endswith('.yaml') or file_name.lower().endswith('.yml'):
-                return cls.load_yaml(f)
+                return cls.load_yaml(f, config_cls=config_cls)
             else:
                 # Guess format
                 try:
-                    return cls.load_json(f)
+                    return cls.load_json(f, config_cls=config_cls)
                 except Exception:
-                    return cls.load_yaml(f)
+                    return cls.load_yaml(f, config_cls=config_cls)
 
     @classmethod
-    def load_json(cls, file_obj):
+    def load_json(cls, file_obj, config_cls=Config):
         """Create a Config from a JSON file."""
         settings = json.load(file_obj)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def load_yaml(cls, file_obj):
+    def load_yaml(cls, file_obj, config_cls=Config):
         """Create a Config from a YAML file."""
         settings = yaml.safe_load(file_obj)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def loads_json(cls, s):
+    def loads_json(cls, s, config_cls=Config):
         """Create a Config from a JSON string."""
         settings = json.loads(s)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
 
     @classmethod
-    def loads_yaml(cls, s):
+    def loads_yaml(cls, s, config_cls=Config):
         """Create a Config from a YAML string."""
         settings = yaml.safe_load(s)
-        config = Config(**settings)
+        config = config_cls(**settings)
         return config
