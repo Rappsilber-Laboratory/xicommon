@@ -51,7 +51,7 @@ class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',
                  source_path='', run_name='', scan_number=-1, scan_index=-1, title='',
                  gradient_percent_b=np.nan):
-        \"\"\"
+        """
         Initialise a Spectrum object.
 
         :param precursor: (dict) Spectrum precursor information as dict.  e.g. {'mz':
@@ -66,7 +66,7 @@ class Spectrum:
         :param scan_number: (int) Scan number of the spectrum
         :param scan_index: (int) Index of the spectrum in the file
         :param gradient_percent_b: (float) Gradient percent B at retention time
-        \"\"\"
+        """
         self.precursor = precursor
         self.scan_id = scan_id
         self.scan_number = scan_number
@@ -822,7 +822,7 @@ class RAWReader(SpectraReader):
             pass
 
         # Choose the data stream from the data source.
-        self._reader.select_instrument(self.Device.MS, 1)
+        self._reader.select_instrument(self.Device.MS.value, 1)
 
         log(f'The RAW file has data from {self._reader.instrument_count} instruments')
         super().load(source, file_name, source_path)
@@ -886,7 +886,8 @@ class RAWReader(SpectraReader):
             t1, b1 = self.gradient[i]
             t2, b2 = self.gradient[i+1]
             if t1 <= rt_min <= t2:
-                if t2 == t1: return b1
+                if t2 == t1:
+                    return b1
                 return b1 + (b2 - b1) * (rt_min - t1) / (t2 - t1)
         if rt_min < self.gradient[0][0]:
             return self.gradient[0][1]
@@ -937,9 +938,12 @@ class RAWReader(SpectraReader):
 
         gradient_percent_b = self.get_gradient_at_rt(retention_time)
 
-        return Spectrum(precursor, mz_arr, intensities_arr, scan_id, rt,
-                        self.file_name, self.source_path,
-                        self.default_run_name, scan_number, scan_index, gradient_percent_b=gradient_percent_b)
+        return Spectrum(
+            precursor, mz_arr, intensities_arr, scan_id, rt,
+            self.file_name, self.source_path,
+            self.default_run_name, scan_number,
+            scan_index, gradient_percent_b=gradient_percent_b
+        )
 
     @property
     def spectra(self):

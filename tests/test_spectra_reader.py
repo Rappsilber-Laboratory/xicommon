@@ -28,6 +28,7 @@ from xicommon.mock_context import MockContext
 import os
 
 
+
 test_mgf_expected = {
     'precursors': [{'mz': 983.6124, 'charge': 2, 'intensity': 1622453.2378},
                    {'mz': 235.6236, 'charge': 3, 'intensity': 3562467.2343}],
@@ -196,7 +197,7 @@ def test_peaklist_wrapper(tmpdir):
 
     wrapper.load(fixtures_dir)
     num_spectra = wrapper.count_spectra()
-    assert num_spectra == 161
+    assert num_spectra == 55830
 
     nofile = os.path.join(fixtures_dir, 'non-existing-file.mgf')
     with pytest.raises(ValueError):
@@ -263,6 +264,15 @@ def test_load_mgf(load_mgf):
         assert spectrum.run_name == expected_run_names[i]
         assert spectrum.scan_number == expected_scan_numbers[i]
         assert spectrum.scan_index == i
+
+
+def test_load_mgf_gradient(load_mgf):
+    reader = load_mgf('MS2_MS1_zoom.mgf')
+    spectra = list(reader.spectra)
+    assert len(spectra) > 0
+    s0 = spectra[0]
+    assert not np.isnan(s0.gradient_percent_b)
+    assert s0.gradient_percent_b == 6.01
 
 
 @pytest.fixture
@@ -419,6 +429,18 @@ def test_load_raw(load_raw):
     assert len(spectra) == 68
     # check spectra values (scan 103, centroid scan)
     check_spectra_reader_raw(103, reader, test_orbitrap_raw_expected)
+
+
+def test_load_raw_gradient(load_raw):
+    reader = load_raw('MS2_MS1_zoom.raw')
+    
+    # The zoom raw file should have a gradient parsed from instrument methods
+    assert len(reader.gradient) > 0
+    
+    # Check that gradient_percent_b was calculated and populated
+    s0 = next(reader.spectra)
+    assert not np.isnan(s0.gradient_percent_b)
+    assert s0.gradient_percent_b == pytest.approx(6.01, abs=0.001)
 
 
 def test_load_mzml_small(load_mzml):
