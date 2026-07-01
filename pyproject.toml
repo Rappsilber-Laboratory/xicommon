@@ -36,7 +36,7 @@ dependencies = [
     "pygments",
     "progress",
     "dirlock",
-    "native-fisher-py>=0.3.0",
+    "native-fisher-py>=0.4.1",
     "pyyaml",
 ]
 
