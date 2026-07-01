@@ -72,7 +72,9 @@ def extract_test_spectra():
         gz_path = os.path.join(fixtures_dir, filename)
         uncompressed_path = os.path.join(fixtures_dir, filename[:-3])
         if os.path.exists(gz_path):
-            if not os.path.exists(uncompressed_path) or os.path.getmtime(gz_path) > os.path.getmtime(uncompressed_path):
+            not_uncompressed = not os.path.exists(uncompressed_path)
+            is_old = os.path.getmtime(gz_path) > os.path.getmtime(uncompressed_path)
+            if not_uncompressed or is_old:
                 with gzip.open(gz_path, 'rb') as f_in:
                     with open(uncompressed_path, 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)

@@ -28,7 +28,6 @@ from xicommon.mock_context import MockContext
 import os
 
 
-
 test_mgf_expected = {
     'precursors': [{'mz': 983.6124, 'charge': 2, 'intensity': 1622453.2378},
                    {'mz': 235.6236, 'charge': 3, 'intensity': 3562467.2343}],
@@ -433,10 +432,10 @@ def test_load_raw(load_raw):
 
 def test_load_raw_gradient(load_raw):
     reader = load_raw('MS2_MS1_zoom.raw')
-    
+
     # The zoom raw file should have a gradient parsed from instrument methods
     assert len(reader.gradient) > 0
-    
+
     # Check that gradient_percent_b was calculated and populated
     s0 = next(reader.spectra)
     assert not np.isnan(s0.gradient_percent_b)
