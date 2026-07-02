@@ -77,7 +77,6 @@ def extract_test_spectra():
                 needs_extract = True
             elif os.path.getmtime(gz_path) > os.path.getmtime(uncompressed_path):
                 needs_extract = True
-                
             if needs_extract:
                 with gzip.open(gz_path, 'rb') as f_in:
                     with open(uncompressed_path, 'wb') as f_out:
