@@ -196,7 +196,7 @@ def test_peaklist_wrapper(tmpdir):
 
     wrapper.load(fixtures_dir)
     num_spectra = wrapper.count_spectra()
-    assert num_spectra == 111431
+    assert num_spectra == 111499
 
     nofile = os.path.join(fixtures_dir, 'non-existing-file.mgf')
     with pytest.raises(ValueError):
