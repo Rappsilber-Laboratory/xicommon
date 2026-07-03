@@ -21,7 +21,12 @@ import yaml
 import re
 import copy
 from memoized_property import memoized_property
-from pyteomics import cmass
+try:
+    from pyteomics import cmass
+    CComposition = cmass.CComposition
+except ImportError:
+    from pyteomics import mass as cmass
+    CComposition = cmass.Composition
 
 # Unique sentinel, used to allow None to be a valid default for a setting.
 NO_DEFAULT = object()
@@ -645,7 +650,7 @@ class ModificationConfig(ConfigGroup):
 
         :return: (dict) atomic compositions of modifications in pyteomics.mass.aa_comp syntax.
         """
-        mod_compositions = {m.name: cmass.CComposition(m.composition) for m in self.modifications}
+        mod_compositions = {m.name: CComposition(m.composition) for m in self.modifications}
         aa_compositions = dict(cmass.std_aa_comp)
         aa_compositions.update(mod_compositions)
 
