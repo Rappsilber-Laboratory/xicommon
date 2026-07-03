@@ -62,6 +62,26 @@ from xicommon.config import Config, Crosslinker, Enzyme, DigestionConfig
 #         db=db_info["db"], dbuser=db_info["dbuser"], dbpassword=db_info["dbpassword"]
 #     )
 
+@pytest.fixture(scope="session", autouse=True)
+def extract_test_spectra():
+    import os
+    import gzip
+    import shutil
+    fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'spectra')
+    for filename in ['MS2_MS1_zoom.raw.gz', 'MS2_MS1_zoom.mgf.gz']:
+        gz_path = os.path.join(fixtures_dir, filename)
+        uncompressed_path = os.path.join(fixtures_dir, filename[:-3])
+        if os.path.exists(gz_path):
+            needs_extract = False
+            if not os.path.exists(uncompressed_path):
+                needs_extract = True
+            elif os.path.getmtime(gz_path) > os.path.getmtime(uncompressed_path):
+                needs_extract = True
+            if needs_extract:
+                with gzip.open(gz_path, 'rb') as f_in:
+                    with open(uncompressed_path, 'wb') as f_out:
+                        shutil.copyfileobj(f_in, f_out)
+
 
 @pytest.fixture()
 def search_config():

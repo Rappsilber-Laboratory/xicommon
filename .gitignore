@@ -28,3 +28,6 @@ build/
 
 .vscode/
 /xisearch2/_version.py
+
+MS2_MS1_zoom.raw
+MS2_MS1_zoom.mgf

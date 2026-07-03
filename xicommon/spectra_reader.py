@@ -49,7 +49,8 @@ def _archive_member_path(member_name: str) -> str:
 
 class Spectrum:
     def __init__(self, precursor, mz_array, int_array, scan_id, rt=np.nan, file_name='',
-                 source_path='', run_name='', scan_number=-1, scan_index=-1, title=''):
+                 source_path='', run_name='', scan_number=-1, scan_index=-1, title='',
+                 gradient_percent_b=np.nan):
         """
         Initialise a Spectrum object.
 
@@ -64,6 +65,7 @@ class Spectrum:
         :param run_name: (str) Name of the MS run
         :param scan_number: (int) Scan number of the spectrum
         :param scan_index: (int) Index of the spectrum in the file
+        :param gradient_percent_b: (float) Gradient percent B at retention time
         """
         self.precursor = precursor
         self.scan_id = scan_id
@@ -74,6 +76,7 @@ class Spectrum:
         self.source_path = source_path
         self.run_name = run_name
         self.title = title
+        self.gradient_percent_b = gradient_percent_b
         mz_array = np.asarray(mz_array, dtype=np.float64)
         int_array = np.asarray(int_array, dtype=np.float64)
         # make sure that the m/z values are sorted asc
@@ -594,10 +597,17 @@ class MGFReader(SpectraReader):
         except (AttributeError, ValueError):
             scan_number = -1
 
+        gradient_percent_b = mgf_spec['params'].get('gradient_percent_b', np.nan)
+        if isinstance(gradient_percent_b, str):
+            try:
+                gradient_percent_b = float(gradient_percent_b)
+            except ValueError:
+                gradient_percent_b = np.nan
+
         return Spectrum(precursor, mgf_spec['m/z array'],
                         mgf_spec['intensity array'], scan_id,
                         rt, self.file_name, self.source_path, run_name, scan_number,
-                        scan_index, title=title)
+                        scan_index, title=title, gradient_percent_b=gradient_percent_b)
 
     @property
     def spectra(self):
@@ -795,9 +805,24 @@ class RAWReader(SpectraReader):
         file_name = os.path.basename(source) if file_name is None else file_name
         self.default_run_name = os.path.splitext(os.path.basename(file_name))[0]
         self.number_of_ms2 = 0
+        self.gradient = []
+
+        try:
+            from native_fisher_py.utils.gradient import parse_vanquish_neo_gradient
+            for i in range(self._reader.get_instrument_methods_count()):
+                try:
+                    method = self._reader.get_instrument_method(i)
+                    grad_dict = parse_vanquish_neo_gradient(str(method))
+                    if grad_dict and grad_dict.get("gradient"):
+                        self.gradient = grad_dict["gradient"]
+                        break
+                except Exception:
+                    continue
+        except ImportError:
+            pass
 
         # Choose the data stream from the data source.
-        self._reader.select_instrument(self.Device.MS, 1)
+        self._reader.select_instrument(self.Device.MS.value, 1)
 
         log(f'The RAW file has data from {self._reader.instrument_count} instruments')
         super().load(source, file_name, source_path)
@@ -853,6 +878,23 @@ class RAWReader(SpectraReader):
         except Exception:
             return np.nan
 
+    def get_gradient_at_rt(self, rt_min):
+        """Calculates gradient percent B based on retention time in minutes."""
+        if not self.gradient:
+            return np.nan
+        for i in range(len(self.gradient) - 1):
+            t1, b1 = self.gradient[i]
+            t2, b2 = self.gradient[i+1]
+            if t1 <= rt_min <= t2:
+                if t2 == t1:
+                    return b1
+                return b1 + (b2 - b1) * (rt_min - t1) / (t2 - t1)
+        if rt_min < self.gradient[0][0]:
+            return self.gradient[0][1]
+        if rt_min > self.gradient[-1][0]:
+            return self.gradient[-1][1]
+        return np.nan
+
     def _convert_spectrum(self, scan_number=int):
         """Convert spectrum to precursor dictionary."""
         precursor = {
@@ -894,9 +936,14 @@ class RAWReader(SpectraReader):
         precursor['intensity'] = self.find_precursor_intensity(self._reader, precursor['mz'],
                                                                master_scan['master_scan_number'])
 
-        return Spectrum(precursor, mz_arr, intensities_arr, scan_id, rt,
-                        self.file_name, self.source_path,
-                        self.default_run_name, scan_number, scan_index)
+        gradient_percent_b = self.get_gradient_at_rt(retention_time)
+
+        return Spectrum(
+            precursor, mz_arr, intensities_arr, scan_id, rt,
+            self.file_name, self.source_path,
+            self.default_run_name, scan_number,
+            scan_index, gradient_percent_b=gradient_percent_b
+        )
 
     @property
     def spectra(self):
