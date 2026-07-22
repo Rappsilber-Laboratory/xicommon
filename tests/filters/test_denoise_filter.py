@@ -98,3 +98,28 @@ def test_denoise_preserves_additional_spectrum_attrs():
                                             1284.12))
     assert_array_equal(spectrum.int_values, (73.0, 44.0, 67.0, 18.0, 81.0, 70.0, 112.0, 181.0))
     assert_array_equal(spectrum.isotope_cluster_charge_values, (1, 2, 3, 4, 5, 6, 7, 8))
+
+
+def test_denoise_isotope_cluster_resolved_spectrum_keeps_mz_int_in_sync():
+    """
+    On an isotope-cluster resolved spectrum, denoising filters
+    isotope_cluster_mz_values/isotope_cluster_intensity_values. mz_values/int_values must be
+    kept in sync with those, since consumers may read either view of the same spectrum.
+    """
+    spectrum = Spectrum({},
+                        (846.6, 846.8, 847.6, 848.01, 1272.62, 1273.12, 1283.1, 1284.12),
+                        (73.0, 44.0, 67.0, 18.0, 81.0, 70.0, 112.0, 181.0), 'test')
+    spectrum.isotope_cluster_charge_values = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+    spectrum.isotope_cluster_mz_values = spectrum.mz_values
+    spectrum.isotope_cluster_intensity_values = spectrum.int_values
+    context = MockContext(Config(denoise_alpha=DenoiseConfig(top_n=2, bin_size=100)))
+    denoise_filter = DenoiseFilter(context, 'denoise_alpha')
+    out = denoise_filter.process(spectrum)
+
+    expected_mz = np.array([846.6, 847.6, 1283.1, 1284.12])
+    expected_int = np.array([73.0, 67.0, 112.0, 181.0])
+
+    assert_array_equal(out.isotope_cluster_mz_values, expected_mz)
+    assert_array_equal(out.isotope_cluster_intensity_values, expected_int)
+    assert_array_equal(out.mz_values, expected_mz)
+    assert_array_equal(out.int_values, expected_int)

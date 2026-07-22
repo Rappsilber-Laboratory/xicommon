@@ -76,15 +76,17 @@ class DenoiseFilter(BaseFilter):
         new_spec = copy(spectrum)
         sort_mask = np.argsort(mz_values[s])
 
+        # mz_values/int_values always reflect the selected peaks - whether they came from the
+        # raw peak list or the isotope-cluster view - so the two views never fall out of sync.
+        new_spec.mz_values = mz_values[s][sort_mask]
+        new_spec.int_values = int_values[s][sort_mask]
+
         # was it a isotope cluster resolved spectrum
-        if spectrum.isotope_cluster_charge_values is None:
-            # No - so just replace the peaks
-            new_spec.mz_values = mz_values[s][sort_mask]
-            new_spec.int_values = int_values[s][sort_mask]
-        else:
-            # it was isotope resolved - so we can just replace the isotope information
-            new_spec.isotope_cluster_mz_values = mz_values[s][sort_mask]
-            new_spec.isotope_cluster_int_values = int_values[s][sort_mask]
+        if spectrum.isotope_cluster_charge_values is not None:
+            # it was isotope resolved - so mirror the same selection onto the isotope
+            # information
+            new_spec.isotope_cluster_mz_values = new_spec.mz_values
+            new_spec.isotope_cluster_intensity_values = new_spec.int_values
             new_spec.isotope_cluster_charge_values = spectrum.isotope_cluster_charge_values[s][
                 sort_mask]
         if hasattr(spectrum, 'peak_tolerance'):
