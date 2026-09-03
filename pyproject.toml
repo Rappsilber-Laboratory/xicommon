@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm", "Cython>=3.3.0", "numpy>=1.20"]
+requires = ["setuptools>=42", "wheel", "setuptools_scm", "Cython>=3.0.0", "numpy>=1.20"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -22,13 +22,13 @@ dependencies = [
     "pandas>=1.1.0",
 
     # Performance optimization
-    "cython>=3.3.0",
+    "cython>=3.0.0,<3.1.0",
 
     # XML parsing (for mzML files)
     "lxml",
 
     # Compression support
-    "xicommon-zipfile-deflate64",
+    "zipfile-deflate64 @ git+https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git",
 
     # Utilities
     "memoized-property",
@@ -45,7 +45,7 @@ dev = [
     "pytest>=3.6.4",
     "pytest-cov",
     "pytest-flake8>=1.1.0",
-    "flake8>=6.0.0",
+    "flake8==4.0.1",
     "build",
     "memory-profiler",
     "pprofile",
