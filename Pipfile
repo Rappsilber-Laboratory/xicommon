@@ -10,7 +10,7 @@ numpy = ">=2.1.0"
 pandas = ">=1.1.0"
 cython = ">=3.0.0,<3.1.0"
 lxml = "*"
-zipfile-deflate64 = {git = "https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git"}
+xicommon-zipfile-deflate64 = "*"
 memoized-property = "*"
 termcolor = "*"
 pygments = "*"
@@ -21,10 +21,10 @@ native-fisher-py = ">=0.3.0"
 psims = "*"
 
 [dev-packages]
-pytest = ">=3.6.4"
+pytest = "<8.0.0"
 pytest-cov = "*"
 pytest-flake8 = ">=1.1.0"
-flake8 = "==4.0.1"
+flake8 = ">=6.0.0"
 build = "*"
 memory-profiler = "*"
 pprofile = "*"
@@ -34,4 +34,4 @@ recursive-diff = "*"
 setuptools = ">=65"
 
 [requires]
-python_version = "3.10"
+python_version = "3.14"
