@@ -797,7 +797,7 @@ class RAWReader(SpectraReader):
         self.number_of_ms2 = 0
 
         # Choose the data stream from the data source.
-        self._reader.select_instrument(self.Device.MS, 1)
+        self._reader.select_instrument(int(self.Device.MS), 1)
 
         log(f'The RAW file has data from {self._reader.instrument_count} instruments')
         super().load(source, file_name, source_path)
