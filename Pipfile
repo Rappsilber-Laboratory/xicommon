@@ -33,5 +33,3 @@ pytest-pydocstyle = "*"
 recursive-diff = "*"
 setuptools = ">=65"
 
-[requires]
-python_version = "3.14"
