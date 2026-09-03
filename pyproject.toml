@@ -28,7 +28,7 @@ dependencies = [
     "lxml",
 
     # Compression support
-    "zipfile-deflate64 @ git+https://github.com/Rappsilber-Laboratory/zipfile-deflate64.git",
+    "xicommon-zipfile-deflate64",
 
     # Utilities
     "memoized-property",
