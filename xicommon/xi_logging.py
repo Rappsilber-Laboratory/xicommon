@@ -156,7 +156,7 @@ def format_eta(eta):
     :return: (str) e.g. '3days', '5h', '12m' or '42s'
     """
     eta = int(eta)
-    # more then two days left
+    # more than two days left
     if eta > 172800:
         return str(eta // 86400) + "days"
     # more than 2 hours - report in hours
