@@ -120,7 +120,10 @@ def _read_log(out_file, expected_line, timeout=5):
 
 @pytest.mark.parametrize('progress', [False, True])
 def test_progress_bar_logs_eta(tmpdir, monkeypatch, progress):
-    """Progress lines with ETA are written to the log file, with or without progress bars."""
+    """
+    Progress lines with ETA are written to the log file, with or without progress bars.
+    Will be run twice once with progress=False and once with progress=True.
+    """
     import xicommon.xi_logging as xi_logging
     out_file = str(tmpdir + "/xi_progress_log.txt")
     clock = [1000.0]
