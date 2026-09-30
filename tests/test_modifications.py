@@ -583,3 +583,23 @@ def test_digestibility():
         (0, [0, 0, 0, 2, 0, 0], 0, False, 1),  # AcCAK
     ], dtype=mod_peptides.dtype)
     assert_array_equal(mod_peptides, expected_peptides)
+
+
+def test_apply_protein_fixed_mods():
+    fix_mod = Modification(name='cm', specificity=['C'], type='fixed', level='protein', mass=57)
+    ctx = MockContext(Config(modification=ModificationConfig(modifications=[fix_mod])))
+    modifier = Modifier(ctx)
+    sequences = np.array([b'ACDC', b'KMN', b'CCCCCCCCCCCCCCCCCCCCCCCCCCCC'])
+
+    result = modifier.apply_protein_fixed_mods(sequences)
+
+    # a list of bytes, not padded to the longest sequence
+    assert result == [b'AcmCDcmC', b'KMN', b'cmC' * 28]
+    assert [modifier.apply_protein_fixed_mods_to_sequence(s) for s in sequences] == result
+
+
+def test_apply_protein_fixed_mods_without_mods():
+    modifier = Modifier(MockContext(Config()))
+    sequences = np.array([b'ACDC', b'KMN'])
+    assert modifier.apply_protein_fixed_mods(sequences) is sequences
+    assert modifier.apply_protein_fixed_mods_to_sequence(b'ACDC') == b'ACDC'

@@ -165,21 +165,20 @@ class SimpleFragmentDatabase:
 
     def _build_fragment_table(self):
         """Generate fragment table using fragmentation from common."""
-        from xicommon.fragmentation import fragment_ions
+        from xicommon.fragmentation import fragment_ion_masses
 
         # Generate fragments for all peptides
         masses_list = []
         ids_list = []
 
-        generator = fragment_ions(
+        generator = fragment_ion_masses(
             self.sequences,
             self.modified_peptides[~self.modified_peptides['linear_only']],
-            self.context,
+            self.context.config,
             add_precursor=True
         )
 
-        for term, ion, loss, loss_count, sites, masses in generator:
-            peptide_indices = sites['peptide_index']
+        for term, ion, peptide_indices, masses in generator:
             masses_list.append(masses + PROTON_MASS)
             ids_list.append(peptide_indices)
 

@@ -58,27 +58,39 @@ class Modifier:
 
         self.mod_pep_count = None
 
+    def apply_protein_fixed_mods_to_sequence(self, sequence):
+        """
+        Apply fixed protein level modifications on a single sequence.
+
+        :param sequence: (bytes) amino acid sequence
+        :return: (bytes) modified amino acid sequence
+        """
+        if len(self.protein_fix_mods) == 0:
+            return sequence
+        # fixed modifications result in exactly one isoform
+        modified, = parser.isoforms(sequence.decode('ascii'), fixed_mods=self.protein_fix_mods,
+                                    labels=self.labels)
+        return modified.encode('ascii')
+
     def apply_protein_fixed_mods(self, sequences):
         """
         Apply fixed protein level modifications on an array of sequences.
 
-        :param sequences: (ndarray bytes) amino acid sequences
-        :return: (ndarray bytes) modified amino acid sequences
+        :param sequences: (ndarray | list of bytes) amino acid sequences
+        :return: (list of bytes) modified amino acid sequences (the input itself if there are no
+            fixed protein modifications). A list, as a fixed width bytes array would pad every
+            sequence to the length of the longest protein.
         """
         if len(self.protein_fix_mods) == 0:
             return sequences
-
-        return_sequences = []
         bar = ProgressBar("Applying %d fixed protein modifications" % len(self.protein_fix_mods),
                           len(sequences))
+        return_sequences = []
         for sequence in sequences:
-            mod_gen = parser.isoforms(sequence.decode('ascii'), fixed_mods=self.protein_fix_mods,
-                                      labels=self.labels)
-            return_sequences.extend(list(mod_gen))
+            return_sequences.append(self.apply_protein_fixed_mods_to_sequence(sequence))
             bar.next()
         bar.finish()
-
-        return np.array(return_sequences, bytes)
+        return return_sequences
 
     def apply_remaining_mods(self, peptides, site_info_table):
         """
