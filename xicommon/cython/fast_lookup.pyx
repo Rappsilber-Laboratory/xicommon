@@ -26,7 +26,8 @@ cimport cython
 result_dtype = np.dtype([('mass_index', np.intp), ('id', np.intp)])
 
 def fast_lookup(const np.float_t[:] masses, ids, np.float_t[:, :, :] limits,
-                bint return_matches, bint return_unique, bint return_counts):
+                bint return_matches, bint return_unique, bint return_counts,
+                np.intp_t max_count=0):
     """
     Look up matching IDs for given masses.
 
@@ -50,12 +51,20 @@ def fast_lookup(const np.float_t[:] masses, ids, np.float_t[:, :, :] limits,
                           the search masses that matched.
     :param return_counts: If True, also return an array with the number of matches
                           for each unique index of the search masses that matched.
+    :param max_count: If > 0, mass ranges matching more than max_count reference masses
+                      are treated as not matching anything (e.g. fragment masses shared by
+                      a large fraction of all peptides that carry no information).
     :return: As above, depending on parameters.
     """
     cdef bint have_ids = (ids is not None)
 
     # Find the indices of the lowest and highest matching values in the table.
     matches = np.searchsorted(masses, limits)
+
+    # Drop ranges with too many matches by making them empty
+    if max_count > 0:
+        too_many = (matches[1] - matches[0]) > max_count
+        matches[1][too_many] = matches[0][too_many]
 
     # Get memory views into the matches
     cdef np.intp_t[:, ::1] start_indices = matches[0]
