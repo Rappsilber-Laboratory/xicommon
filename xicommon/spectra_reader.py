@@ -809,7 +809,6 @@ class RAWReader(SpectraReader):
         """
 
         for scan_number in range(1, self._reader.run_header_ex.spectra_count + 1):
-            scan_statistics = self._reader.get_scan_stats_for_scan_number(scan_number)
             scan_filter = self._reader.get_filter_for_scan_number(scan_number)
 
             if scan_filter.ms_order == self.MsOrderType.Ms2:
@@ -903,7 +902,6 @@ class RAWReader(SpectraReader):
         count = -self.offset
         for scan_number in range(1, self._reader.run_header_ex.spectra_count + 1):
             # Build scan-specific statistics
-            scan_statistics = self._reader.get_scan_stats_for_scan_number(scan_number)
             scan_filter = self._reader.get_filter_for_scan_number(scan_number)
 
             if scan_filter.ms_order == self.MsOrderType.Ms2:
