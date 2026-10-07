@@ -809,12 +809,10 @@ class RAWReader(SpectraReader):
         """
 
         for scan_number in range(1, self._reader.run_header_ex.spectra_count + 1):
-            scan_statistics = self._reader.get_scan_stats_for_scan_number(scan_number)
             scan_filter = self._reader.get_filter_for_scan_number(scan_number)
 
-            if (scan_statistics.is_centroid_scan):
-                if scan_filter.ms_order == self.MsOrderType.Ms2:
-                    self.number_of_ms2 += 1
+            if scan_filter.ms_order == self.MsOrderType.Ms2:
+                self.number_of_ms2 += 1
         count_from_offset = self.number_of_ms2 - self.offset
         return int(count_from_offset/self.step) + (count_from_offset % self.step > 0)
 
@@ -904,19 +902,14 @@ class RAWReader(SpectraReader):
         count = -self.offset
         for scan_number in range(1, self._reader.run_header_ex.spectra_count + 1):
             # Build scan-specific statistics
-            scan_statistics = self._reader.get_scan_stats_for_scan_number(scan_number)
             scan_filter = self._reader.get_filter_for_scan_number(scan_number)
 
-            if (scan_statistics.is_centroid_scan):
-
-                if scan_filter.ms_order == self.MsOrderType.Ms2:
-                    if count >= 0 and count % self.step == 0:
-                        spec = self._convert_spectrum(scan_number)
-                        if spec is not None:
-                            yield spec
-                    count += 1
-            else:
-                continue  # Case of having MS1 spectra
+            if scan_filter.ms_order == self.MsOrderType.Ms2:
+                if count >= 0 and count % self.step == 0:
+                    spec = self._convert_spectrum(scan_number)
+                    if spec is not None:
+                        yield spec
+                count += 1
 
 
 def order_peptide_ids(annotations, n_peps):
