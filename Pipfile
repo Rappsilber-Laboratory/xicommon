@@ -29,7 +29,6 @@ build = "*"
 memory-profiler = "*"
 pprofile = "*"
 py-spy = "*"
-pytest-pydocstyle = "*"
 recursive-diff = "*"
 setuptools = ">=65"
 
