@@ -44,7 +44,7 @@ dependencies = [
 dev = [
     "pytest>=3.6.4",
     "pytest-cov",
-    "pytest-flake8>=1.1.0",
+    "pytest-xdist",
     "flake8==4.0.1",
     "build",
     "memory-profiler",
