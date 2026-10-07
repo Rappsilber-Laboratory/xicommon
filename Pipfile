@@ -17,8 +17,8 @@ pygments = "*"
 progress = "*"
 dirlock = "*"
 pyyaml = "*"
-native-fisher-py = ">=0.3.0"
 psims = "*"
+native-fisher-py = "*"
 
 [dev-packages]
 pytest = "<8.0.0"
