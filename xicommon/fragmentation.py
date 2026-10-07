@@ -22,7 +22,7 @@ This module generates specific fragments for ions, losses, modified
 fragments and unmodified sequences.
 """
 from xicommon.utils import concatenated_ranges, get_chunk_indices
-from xicommon.mass import mass, ion_mass_byte, unmodified_termini_mass
+from xicommon.mass import mass, ion_mass_byte, unmodified_termini_mass, aa_masses
 from xicommon import dtypes
 from xicommon.const import PROTON_MASS
 from xicommon.xi_logging import log
@@ -363,6 +363,69 @@ def fragment_ions(sequences, modified_peptides, context, add_precursor=False):
             frag_ion_masses = masses[valid_sites['fragment_index']]
 
             yield term, ion, None, 0, valid_sites, frag_ion_masses
+
+
+def fragment_ion_masses(sequences, modified_peptides, config, add_precursor=False,
+                        chunk_size=100000):
+    """
+    Return a generator producing the fragment ion masses of modified peptides in chunks.
+
+    Produces the same (peptide index, mass) pairs as fragment_ions, but without finding unique
+    fragments first. The masses of all n-terminal fragments of a peptide are the prefix sums of
+    its residue masses, the c-terminal ones the suffix sums. Peptides are processed in chunks, so
+    memory usage does not depend on the total number of peptides.
+
+    :param sequences: (bytes ndarray) array of unmodified peptide sequences
+    :param modified_peptides: (ndarray) array describing modified peptides
+    :param config: (Config) search configuration
+    :param add_precursor: (bool) If True generates precursor ions
+    :param chunk_size: (int) number of modified peptides processed at once
+    :return: (generator) yielding for each chunk and ion type:
+        (bytes) terminus, b'n', b'c' or b'P' (precursor),
+        (bytes) ion type, e.g. b'b',
+        (intp, ndarray) indices into modified_peptides,
+        (float64, ndarray) fragment masses
+    """
+    width = sequences.dtype.itemsize
+    mod_deltas = np.array([0] + [mod.mass for mod in config.modification.modifications])
+    ions = ((b'n', config.fragmentation.nterm_ions_ascii),
+            (b'c', config.fragmentation.cterm_ions_ascii),
+            (b'P', [b'P'] if add_precursor else []))
+    # column index of each residue position
+    positions = np.arange(width)
+
+    for start in range(0, len(modified_peptides), chunk_size):
+        chunk = modified_peptides[start:start + chunk_size]
+        chars = sequences[chunk['sequence_index']].view(np.uint8).reshape(len(chunk), width)
+        mods = chunk['modifications']
+        lengths = (chars != 0).sum(axis=1)
+        peptide_indices = np.arange(start, start + len(chunk))
+
+        # residue masses including modifications (padding has mass 0)
+        residues = aa_masses[chars] + mod_deltas[mods[:, 2:]]
+        # prefix[:, k] is the mass of residues 0..k, suffix[:, k] the mass of residues k..end
+        prefix = np.cumsum(residues, axis=1)
+        suffix = np.cumsum(residues[:, ::-1], axis=1)[:, ::-1]
+        nterm_mod = mod_deltas[mods[:, 0]]
+        cterm_mod = mod_deltas[mods[:, 1]]
+
+        # n-terminal fragments end after residue 0..L-2, c-terminal ones start at residue 1..L-1
+        nterm_mask = positions < (lengths - 1)[:, None]
+        cterm_mask = (positions >= 1) & (positions < lengths[:, None])
+        term_masses = {
+            b'n': ((prefix + (nterm_mod + unmodified_termini_mass)[:, None])[nterm_mask],
+                   np.repeat(peptide_indices, lengths - 1)),
+            b'c': ((suffix + (cterm_mod + unmodified_termini_mass)[:, None])[cterm_mask],
+                   np.repeat(peptide_indices, lengths - 1)),
+            b'P': (suffix[:, 0] + nterm_mod + cterm_mod + unmodified_termini_mass,
+                   peptide_indices),
+        }
+        del chars, mods, residues, prefix, suffix, nterm_mask, cterm_mask
+
+        for term, term_ions in ions:
+            masses, indices = term_masses[term]
+            for ion in term_ions:
+                yield term, ion, indices, masses + ion_mass_byte(ion)
 
 
 def include_losses(fragment_table, peptide_ids, context):

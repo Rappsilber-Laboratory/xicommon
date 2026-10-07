@@ -16,12 +16,13 @@
 # USA
 
 from xicommon.fragmentation import fragment_sequences, fragment_ions, spread_charges, \
-    include_losses
+    include_losses, fragment_ion_masses
 from xicommon.config import Config, ModificationConfig, Modification, Loss, Crosslinker, \
     FragmentationConfig
 from xicommon.mock_context import MockContext
 from xicommon import const
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal
 
 
@@ -61,6 +62,67 @@ def test_fragment_ions_no_losses():
     assert nterm_frags[2] is None   # loss
     assert nterm_frags[3] == 0      # loss count
     assert_array_equal(nterm_frags[4], expected_nterm_sites)       # sites
+
+
+def _ion_mass_entries(generator, chunked):
+    """Collect (term, ion, peptide_index, mass) entries sorted by everything but the mass."""
+    terms, ions, indices, masses = [], [], [], []
+    for entry in generator:
+        if chunked:
+            term, ion, peptide_indices, ion_masses = entry
+        else:
+            term, ion, _, _, sites, ion_masses = entry
+            peptide_indices = sites['peptide_index']
+        terms += [term] * len(ion_masses)
+        ions += [ion] * len(ion_masses)
+        indices.append(peptide_indices)
+        masses.append(ion_masses)
+    indices = np.concatenate(indices)
+    masses = np.concatenate(masses)
+    order = np.lexsort((masses, indices, np.array(ions), np.array(terms)))
+    return np.array(terms)[order], np.array(ions)[order], indices[order], masses[order]
+
+
+@pytest.mark.parametrize('add_precursor', [False, True])
+def test_fragment_ion_masses_matches_fragment_ions(add_precursor):
+    """The chunked prefix/suffix sum masses equal the masses from fragment_ions."""
+    mods = [Modification(name='cm', specificity=['C'], type='fixed', composition='C2H3N1O1'),
+            Modification(name='ox', specificity=['M'], type='variable', composition='O1'),
+            Modification(name='nt-', specificity=['X'], type='variable', composition='H2'),
+            Modification(name='-ct', specificity=['X'], type='variable', composition='O1')]
+    config = Config(modification=ModificationConfig(modifications=mods),
+                    fragmentation=FragmentationConfig(nterm_ions=['a', 'b'],
+                                                      cterm_ions=['y']))
+    ctx = MockContext(config)
+
+    rng = np.random.default_rng(1)
+    alphabet = np.frombuffer(b'ACDEFGHIKLMNPQRSTVWY', np.uint8)
+    unmodified = np.unique(np.array(
+        [alphabet[rng.integers(0, 20, rng.integers(2, 25))].tobytes() for _ in range(300)]))
+    width = unmodified.dtype.itemsize
+    mod_peptides = np.zeros(900, [('sequence_index', '<i8'), ('modifications', 'u1', (width + 2,))])
+    mod_peptides['sequence_index'] = np.sort(rng.integers(0, len(unmodified), 900))
+    for peptide in mod_peptides:
+        sequence = unmodified[peptide['sequence_index']]
+        for pos, aa in enumerate(sequence):
+            if aa == ord('C'):
+                peptide['modifications'][pos + 2] = 1
+            elif aa == ord('M') and rng.random() < 0.5:
+                peptide['modifications'][pos + 2] = 2
+        peptide['modifications'][0] = 3 if rng.random() < 0.3 else 0
+        peptide['modifications'][1] = 4 if rng.random() < 0.3 else 0
+
+    expected = _ion_mass_entries(
+        fragment_ions(unmodified, mod_peptides, ctx, add_precursor=add_precursor), False)
+    # small chunk size to cover chunk boundaries
+    result = _ion_mass_entries(
+        fragment_ion_masses(unmodified, mod_peptides, config, add_precursor=add_precursor,
+                            chunk_size=64), True)
+
+    assert_array_equal(expected[0], result[0])
+    assert_array_equal(expected[1], result[1])
+    assert_array_equal(expected[2], result[2])
+    np.testing.assert_allclose(result[3], expected[3], rtol=0, atol=1e-9)
 
 
 def test_fragment_sequences_single():

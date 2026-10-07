@@ -243,7 +243,7 @@ class ProgressBar(object):
             self.bar.goto(self.count)
             self.percent = percent
         # write progress to the log file - independent of the progress bar being shown.
-        # Not faster then every log_interval seconds and only for a new percent (at most 100
+        # Not faster than every log_interval seconds and only for a new percent (at most 100
         # times), unless log_max_interval seconds have passed
         if _log_file and self.count > 0:
             since_log = timestamp - self.logtimestamp
