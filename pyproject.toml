@@ -45,7 +45,7 @@ dev = [
     "pytest>=3.6.4",
     "pytest-cov",
     "pytest-xdist",
-    "flake8==4.0.1",
+    "flake8",
     "ruff",
     "build",
     "memory-profiler",
