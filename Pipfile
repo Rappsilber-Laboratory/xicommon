@@ -21,15 +21,15 @@ psims = "*"
 native-fisher-py = "*"
 
 [dev-packages]
-pytest = "<8.0.0"
+pytest = "*"
 pytest-cov = "*"
-pytest-flake8 = ">=1.1.0"
+pytest-xdist = "*"
 flake8 = ">=6.0.0"
 build = "*"
 memory-profiler = "*"
 pprofile = "*"
+ruff = "*"
 py-spy = "*"
-pytest-pydocstyle = "*"
 recursive-diff = "*"
 setuptools = ">=65"
 
