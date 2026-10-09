@@ -53,7 +53,7 @@ class ContextBase:
         self._rerrors_ms2 = {}
         self._isotope_rtol = {}
 
-        use_recal_tols = getattr(self.config, 'use_recalibrated_tolerances', True)
+        use_recal_tols = getattr(self.config, 'use_recalibrated_tolerances', False)
 
         for recali_config in self.config.recalibration:
             if use_recal_tols:
