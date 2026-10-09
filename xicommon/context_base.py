@@ -53,16 +53,19 @@ class ContextBase:
         self._rerrors_ms2 = {}
         self._isotope_rtol = {}
 
+        use_recal_tols = getattr(self.config, 'use_recalibrated_tolerances', False)
+
         for recali_config in self.config.recalibration:
-            # store file specific tolerances for fast (and easy) access if useful
-            if recali_config.ms1_atol > 0:
-                self._atolerances_ms1[recali_config.file] = recali_config.ms1_atol
-            if recali_config.ms2_atol > 0:
-                self._atolerances_ms2[recali_config.file] = recali_config.ms2_atol
-            if recali_config.ms1_rtol > 0:
-                self._rtolerances_ms1[recali_config.file] = recali_config.ms1_rtol
-            if recali_config.ms2_rtol > 0:
-                self._rtolerances_ms2[recali_config.file] = recali_config.ms2_rtol
+            if use_recal_tols:
+                # store file specific tolerances for fast (and easy) access if useful
+                if recali_config.ms1_atol > 0:
+                    self._atolerances_ms1[recali_config.file] = recali_config.ms1_atol
+                if recali_config.ms2_atol > 0:
+                    self._atolerances_ms2[recali_config.file] = recali_config.ms2_atol
+                if recali_config.ms1_rtol > 0:
+                    self._rtolerances_ms1[recali_config.file] = recali_config.ms1_rtol
+                if recali_config.ms2_rtol > 0:
+                    self._rtolerances_ms2[recali_config.file] = recali_config.ms2_rtol
 
             # store file specific errors for fast (and easy) access
             self._aerrors_ms1[recali_config.file] = recali_config.ms1_aerror
