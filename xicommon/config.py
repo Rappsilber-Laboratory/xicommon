@@ -1174,7 +1174,7 @@ class Config(ConfigGroup, ToleranceContainer):
     recalibrate_spectra = Setting(bool, False)
 
     """ Should derived mass tolerances from recalibration be used for the main search? """
-    use_recalibrated_tolerances = Setting(bool, default=True)
+    use_recalibrated_tolerances = Setting(bool, default=False)
 
 
 class ConfigReader:
