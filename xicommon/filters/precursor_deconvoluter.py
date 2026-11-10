@@ -18,10 +18,10 @@
 """Precursor deconvolution module for MS1 isolation window analysis."""
 
 import math
-
 import numpy as np
-
 from xicommon import const
+
+FACTS = np.array([math.factorial(i) for i in range(15)], dtype=np.float64)
 
 
 class PrecursorCandidate:
@@ -111,7 +111,7 @@ class PrecursorDeconvoluter:
         """
         lam = max(mass * 0.000595, 0.01)
         k = np.arange(n_peaks)
-        fact = np.array([math.factorial(i) for i in range(n_peaks)], dtype=np.float64)
+        fact = FACTS[:n_peaks]
         p = (lam ** k) * np.exp(-lam) / fact
         max_p = np.max(p)
         return p / max_p if max_p > 0 else p
@@ -119,6 +119,9 @@ class PrecursorDeconvoluter:
     def deconvolute(self, mzs, ints, target_mz, iso_width=1.6):
         """
         Deconvolute precursor candidates from MS1 peaks within the isolation window.
+
+        Optimized using searchsorted slicing, pairwise diff candidate pruning,
+        and local binary search matching.
 
         :param mzs: (ndarray) 1D sorted array of MS1 m/z values
         :param ints: (ndarray) 1D array of MS1 intensities
@@ -133,51 +136,71 @@ class PrecursorDeconvoluter:
         win_min = target_mz - half_w - self.isolation_margin
         win_max = target_mz + half_w + self.isolation_margin
 
-        in_win_idx = np.where((mzs >= win_min) & (mzs <= win_max))[0]
-        if len(in_win_idx) == 0:
+        # Fast slice using searchsorted
+        i_start = np.searchsorted(mzs, win_min)
+        i_end = np.searchsorted(mzs, win_max)
+        if i_end - i_start < 2:
             return []
+
+        win_mzs = mzs[i_start:i_end]
+        win_ints = ints[i_start:i_end]
+
+        # Pairwise differences within the narrow isolation window
+        diffs = win_mzs[:, None] - win_mzs[None, :]
+        iso_min = target_mz - half_w
+        iso_max = target_mz + half_w
 
         candidates = []
 
         for z in range(self.min_charge, self.max_charge + 1):
             delta = self.C12C13_DIFF / z
-            for start_idx in in_win_idx:
-                m0 = mzs[start_idx]
+            # Candidate pruning: only test peaks that have a neighbor spaced by delta
+            has_neighbor = np.any(np.abs(diffs - delta) <= max(delta * 0.05, self.atol), axis=0)
+            valid_indices = np.where(has_neighbor)[0]
+            if len(valid_indices) == 0:
+                continue
+
+            for idx in valid_indices:
+                m0 = win_mzs[idx]
                 mass = (m0 - self.PROTON) * z
                 if mass < 400 or mass > 25000:
                     continue
 
-                theo_full = self.theoretical_distribution(mass, n_peaks=10)
-                sig_peaks = np.where(theo_full >= 0.05)[0]
-                if len(sig_peaks) < 2:
-                    continue
-                n_peaks = max(3, sig_peaks[-1] + 1)
-                theo = theo_full[:n_peaks]
+                lam = max(mass * 0.000595, 0.01)
+                n_peaks = min(8, max(3, int(lam + 3 * np.sqrt(max(lam, 1)))))
+                k_arr = np.arange(n_peaks)
+                theo = (lam ** k_arr) * np.exp(-lam) / FACTS[:n_peaks]
+                max_theo = np.max(theo)
+                if max_theo > 0:
+                    theo /= max_theo
 
                 obs = np.zeros(n_peaks)
                 matched_mzs = []
                 matched_k = []
-                matched_indices = []
+                matched_local_idx = []
 
                 for k in range(n_peaks):
                     exp_mz = m0 + k * delta
                     tol = max(exp_mz * self.rtol, self.atol)
-                    diffs = np.abs(mzs - exp_mz)
-                    min_i = np.argmin(diffs)
-                    if diffs[min_i] <= tol:
-                        obs[k] = ints[min_i]
-                        matched_mzs.append(mzs[min_i])
+                    p_left = np.searchsorted(win_mzs, exp_mz - tol)
+                    p_right = np.searchsorted(win_mzs, exp_mz + tol)
+                    if p_right > p_left:
+                        if p_right - p_left == 1:
+                            best_p = p_left
+                        else:
+                            diff_slice = np.abs(win_mzs[p_left:p_right] - exp_mz)
+                            best_p = p_left + int(np.argmin(diff_slice))
+                        obs[k] = win_ints[best_p]
+                        matched_mzs.append(win_mzs[best_p])
                         matched_k.append(k)
-                        matched_indices.append(min_i)
+                        matched_local_idx.append(best_p)
 
                 # Require at least 2 matched peaks, and at least one in the first two positions
                 if len(matched_k) < 2 or (0 not in matched_k and 1 not in matched_k):
                     continue
 
                 # At least one matched peak must fall inside the strict isolation window
-                in_iso = any(target_mz - half_w <= mzs[mi] <= target_mz + half_w
-                             for mi in matched_indices)
-                if not in_iso:
+                if not any(iso_min <= win_mzs[p] <= iso_max for p in matched_local_idx):
                     continue
 
                 norm_obs = np.linalg.norm(obs)
@@ -189,8 +212,9 @@ class PrecursorDeconvoluter:
                 if cos_sim >= self.min_correlation:
                     est_m0s = [mz_val - k_val * delta
                                for mz_val, k_val in zip(matched_mzs, matched_k)]
-                    weights = [ints[mi] for mi in matched_indices]
+                    weights = [win_ints[p] for p in matched_local_idx]
                     m0_refined = float(np.average(est_m0s, weights=weights))
+                    global_indices = set(i_start + p for p in matched_local_idx)
 
                     cand = PrecursorCandidate(
                         mz=m0_refined,
@@ -199,7 +223,7 @@ class PrecursorDeconvoluter:
                         mass=(m0_refined - self.PROTON) * z,
                         score=cos_sim,
                         n_peaks=len(matched_k),
-                        matched_indices=matched_indices,
+                        matched_indices=global_indices,
                         mono_offset=0
                     )
                     candidates.append(cand)
@@ -232,12 +256,13 @@ class PrecursorDeconvoluter:
         return accepted
 
     @staticmethod
-    def find_master_ms1_scan(raw_reader, ms2_scan_number):
+    def find_master_ms1_scan(raw_reader, ms2_scan_number, fallback_ms1=None):
         """
         Locate the master MS1 survey scan for an MS2 scan number.
 
         :param raw_reader: RawFileReaderAdapter instance
         :param ms2_scan_number: (int) Scan number of the MS2 event
+        :param fallback_ms1: (int, optional) Known preceding MS1 scan number
         :return: (int | None) Master MS1 scan number or None if not found
         """
         try:
@@ -253,8 +278,12 @@ class PrecursorDeconvoluter:
         except Exception:
             pass
 
-        # Backtrack to the nearest preceding MS1 scan
-        for s in range(ms2_scan_number - 1, 0, -1):
+        if fallback_ms1 is not None and fallback_ms1 > 0:
+            return fallback_ms1
+
+        # Backtrack at most 50 scans to find the preceding MS1
+        min_scan = max(1, ms2_scan_number - 50)
+        for s in range(ms2_scan_number - 1, min_scan - 1, -1):
             try:
                 filt = raw_reader.get_filter_for_scan_number(s)
                 if int(filt.ms_order) == 1:
@@ -264,16 +293,19 @@ class PrecursorDeconvoluter:
 
         return None
 
-    def deconvolute_raw_scan(self, raw_reader, ms2_scan_number, ms1_cache=None):
+    def deconvolute_raw_scan(self, raw_reader, ms2_scan_number, ms1_cache=None,
+                             fallback_ms1=None, trailer_dict=None):
         """
         Deconvolute precursor ions for an MS2 scan directly from a Thermo RAW reader.
 
         :param raw_reader: RawFileReaderAdapter instance
         :param ms2_scan_number: (int) Scan number of the MS2 event
         :param ms1_cache: (dict, optional) Cache mapping ms1_scan_number -> (mzs, ints)
+        :param fallback_ms1: (int, optional) Preceding MS1 scan number
+        :param trailer_dict: (dict, optional) Pre-extracted trailer dictionary
         :return: (list[PrecursorCandidate]) Accepted precursor candidates
         """
-        ms1_scan = self.find_master_ms1_scan(raw_reader, ms2_scan_number)
+        ms1_scan = self.find_master_ms1_scan(raw_reader, ms2_scan_number, fallback_ms1)
         if ms1_scan is None:
             return []
 
@@ -295,20 +327,30 @@ class PrecursorDeconvoluter:
         if len(mzs) == 0:
             return []
 
-        try:
-            target_mz = float(raw_reader.get_precursor_mz(ms2_scan_number))
-        except Exception:
-            target_mz = np.nan
+        if trailer_dict is None:
+            try:
+                trailer_data = raw_reader.get_trailer_extra_information(ms2_scan_number)
+                labels = [x.rstrip(':') for x in trailer_data.labels]
+                trailer_dict = dict(zip(labels, trailer_data.values))
+            except Exception:
+                trailer_dict = {}
 
         try:
-            trailer_data = raw_reader.get_trailer_extra_information(ms2_scan_number)
-            labels = [x.rstrip(':') for x in trailer_data.labels]
-            tdict = dict(zip(labels, trailer_data.values))
-            iso_width = float(tdict.get('MS2 Isolation Width', 1.6))
-            if np.isnan(target_mz):
-                target_mz = float(tdict.get('Monoisotopic M/Z', np.nan))
-        except Exception:
+            iso_width = float(trailer_dict.get('MS2 Isolation Width', 1.6))
+        except (ValueError, TypeError):
             iso_width = 1.6
+
+        target_mz = np.nan
+        try:
+            target_mz = float(trailer_dict.get('Monoisotopic M/Z', np.nan))
+        except (ValueError, TypeError):
+            pass
+
+        if np.isnan(target_mz) or target_mz <= 0:
+            try:
+                target_mz = float(raw_reader.get_precursor_mz(ms2_scan_number))
+            except Exception:
+                target_mz = np.nan
 
         if np.isnan(target_mz) or target_mz <= 0:
             return []
