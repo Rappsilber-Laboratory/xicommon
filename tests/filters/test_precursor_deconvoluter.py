@@ -201,3 +201,36 @@ def test_raw_reader_with_deconvolution_enabled():
         if count >= 5:
             break
     assert count >= 1
+
+
+def test_cython_python_equivalence():
+    deconv_py = PrecursorDeconvoluter(min_charge=2, max_charge=5, min_correlation=0.7,
+                                      use_cython=False)
+    deconv_cy = PrecursorDeconvoluter(min_charge=2, max_charge=5, min_correlation=0.7,
+                                      use_cython=True)
+
+    d2 = const.C12C13_MASS_DIFF / 2
+    d3 = const.C12C13_MASS_DIFF / 3
+
+    mzs_p1 = [999.50 + k * d2 for k in range(3)]
+    theo1 = deconv_py.theoretical_distribution(1997.0, n_peaks=3)
+    ints_p1 = theo1 * 5e5
+
+    mzs_p2 = [1000.10 + k * d3 for k in range(4)]
+    theo2 = deconv_py.theoretical_distribution(2997.0, n_peaks=4)
+    ints_p2 = theo2 * 1e6
+
+    all_mzs = np.array(mzs_p1 + mzs_p2)
+    all_ints = np.array(list(ints_p1) + list(ints_p2))
+    sort_idx = np.argsort(all_mzs)
+    all_mzs = all_mzs[sort_idx]
+    all_ints = all_ints[sort_idx]
+
+    cands_py = deconv_py.deconvolute(all_mzs, all_ints, target_mz=1000.0, iso_width=2.0)
+    cands_cy = deconv_cy.deconvolute(all_mzs, all_ints, target_mz=1000.0, iso_width=2.0)
+
+    assert len(cands_py) == len(cands_cy)
+    for c_py, c_cy in zip(cands_py, cands_cy):
+        assert c_py.charge == c_cy.charge
+        assert np.isclose(c_py.mz, c_cy.mz, atol=1e-3)
+        assert np.isclose(c_py.score, c_cy.score, atol=1e-3)

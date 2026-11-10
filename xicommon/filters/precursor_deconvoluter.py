@@ -18,8 +18,20 @@
 """Precursor deconvolution module for MS1 isolation window analysis."""
 
 import math
+
 import numpy as np
+
 from xicommon import const
+
+try:
+    from xicommon.cython import cy_deconvolute
+    HAVE_CYTHON = True
+except (ImportError, AttributeError):
+    try:
+        from xicommon.cython.fast_precursor_deconv import cy_deconvolute
+        HAVE_CYTHON = True
+    except (ImportError, AttributeError):
+        HAVE_CYTHON = False
 
 FACTS = np.array([math.factorial(i) for i in range(15)], dtype=np.float64)
 
@@ -79,7 +91,8 @@ class PrecursorDeconvoluter:
     PROTON = const.PROTON_MASS
 
     def __init__(self, min_charge=2, max_charge=8, min_correlation=0.65,
-                 isolation_margin=1.0, max_candidates=3, rtol=25e-6, atol=0.008):
+                 isolation_margin=1.0, max_candidates=3, rtol=25e-6, atol=0.008,
+                 use_cython=True):
         """
         Initialise the PrecursorDeconvoluter.
 
@@ -90,6 +103,7 @@ class PrecursorDeconvoluter:
         :param max_candidates: (int) Maximum number of precursor candidates to return per scan
         :param rtol: (float) Relative m/z tolerance for matching isotope peaks (default 25 ppm)
         :param atol: (float) Absolute m/z tolerance for matching isotope peaks (default 8 mDa)
+        :param use_cython: (bool) Whether to use fast Cython acceleration when available
         """
         self.min_charge = min_charge
         self.max_charge = max_charge
@@ -98,6 +112,7 @@ class PrecursorDeconvoluter:
         self.max_candidates = max_candidates
         self.rtol = rtol
         self.atol = atol
+        self.use_cython = use_cython
 
     def theoretical_distribution(self, mass, n_peaks=10):
         """
@@ -129,8 +144,24 @@ class PrecursorDeconvoluter:
         :param iso_width: (float) Full width of MS2 isolation window in Th
         :return: (list[PrecursorCandidate]) List of accepted precursor candidates
         """
-        if len(mzs) == 0:
+        if len(mzs) < 2:
             return []
+
+        if self.use_cython and HAVE_CYTHON:
+            return cy_deconvolute(
+                np.ascontiguousarray(mzs, dtype=np.float64),
+                np.ascontiguousarray(ints, dtype=np.float64),
+                target_mz=float(target_mz),
+                iso_width=float(iso_width),
+                margin=float(self.isolation_margin),
+                min_charge=int(self.min_charge),
+                max_charge=int(self.max_charge),
+                rtol=float(self.rtol),
+                atol=float(self.atol),
+                min_correlation=float(self.min_correlation),
+                max_candidates=int(self.max_candidates),
+                candidate_cls=PrecursorCandidate,
+            )
 
         half_w = iso_width / 2.0
         win_min = target_mz - half_w - self.isolation_margin
@@ -214,7 +245,7 @@ class PrecursorDeconvoluter:
                                for mz_val, k_val in zip(matched_mzs, matched_k)]
                     weights = [win_ints[p] for p in matched_local_idx]
                     m0_refined = float(np.average(est_m0s, weights=weights))
-                    global_indices = set(i_start + p for p in matched_local_idx)
+                    global_indices = {i_start + p for p in matched_local_idx}
 
                     cand = PrecursorCandidate(
                         mz=m0_refined,
