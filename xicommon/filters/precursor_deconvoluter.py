@@ -247,6 +247,31 @@ class PrecursorDeconvoluter:
                     m0_refined = float(np.average(est_m0s, weights=weights))
                     global_indices = {i_start + p for p in matched_local_idx}
 
+                    mono_offset = 0
+                    # Check for missing M0: for large peptides (>= 2500 Da) where M0 was below noise
+                    if mass >= 2500 and len(matched_k) >= 3:
+                        prev_mz = m0 - delta
+                        prev_tol = max(prev_mz * self.rtol, self.atol)
+                        has_prev = (np.searchsorted(win_mzs, prev_mz + prev_tol) >
+                                    np.searchsorted(win_mzs, prev_mz - prev_tol))
+                        if not has_prev:
+                            mass_s = (m0 - delta - self.PROTON) * z
+                            lam_s = max(mass_s * 0.000595, 0.01)
+                            k_s = np.arange(n_peaks + 1)
+                            theo_s = (lam_s ** k_s) * np.exp(-lam_s) / FACTS[:n_peaks + 1]
+                            max_ts = np.max(theo_s)
+                            if max_ts > 0:
+                                theo_s /= max_ts
+                            if theo_s[0] <= 0.45:
+                                norm_ts = np.linalg.norm(theo_s[1:n_peaks + 1])
+                                if norm_ts > 0 and norm_obs > 0:
+                                    cos_s = float(np.dot(obs, theo_s[1:n_peaks + 1]) /
+                                                  (norm_obs * norm_ts))
+                                    if cos_s > cos_sim:
+                                        m0_refined -= delta
+                                        cos_sim = cos_s
+                                        mono_offset = 1
+
                     cand = PrecursorCandidate(
                         mz=m0_refined,
                         charge=z,
@@ -255,7 +280,7 @@ class PrecursorDeconvoluter:
                         score=cos_sim,
                         n_peaks=len(matched_k),
                         matched_indices=global_indices,
-                        mono_offset=0
+                        mono_offset=mono_offset
                     )
                     candidates.append(cand)
 
