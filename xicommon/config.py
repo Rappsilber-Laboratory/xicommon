@@ -969,6 +969,28 @@ class DenoiseConfig(ConfigGroup):
     bin_size = Setting(int)
 
 
+class PrecursorDeconvolutionConfig(ConfigGroup):
+    """Precursor deconvolution configuration for MS1 isolation window analysis."""
+
+    """Enable precursor deconvolution from MS1 scans"""
+    enabled = Setting(bool, False)
+
+    """Minimum precursor charge state to evaluate"""
+    min_charge = Setting(int, 2)
+
+    """Maximum precursor charge state to evaluate"""
+    max_charge = Setting(int, 8)
+
+    """Minimum envelope fit score (cosine similarity)"""
+    min_correlation = Setting(float, 0.65)
+
+    """Margin in Th around isolation window"""
+    isolation_margin = Setting(float, 1.0)
+
+    """Maximum precursor candidates to return per MS2 scan"""
+    max_candidates_per_ms2 = Setting(int, 3)
+
+
 class ReportingRequirementsConfig(ConfigGroup):
     """
     Define settings that affect what results are written out.
@@ -1147,6 +1169,10 @@ class Config(ConfigGroup, ToleranceContainer):
 
     """ Denoise settings for the alpha_beta scoring """
     denoise_alpha_beta = Setting(DenoiseConfig, DenoiseConfig(top_n=20, bin_size=100))
+
+    """ Precursor deconvolution settings for MS1 isolation window analysis """
+    precursor_deconvolution = Setting(PrecursorDeconvolutionConfig,
+                                      PrecursorDeconvolutionConfig())
 
     """Number of neutral loss fragments needed to fulfill the multi-loss requirement
     for conservative scoring"""

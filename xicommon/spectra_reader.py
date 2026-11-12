@@ -482,6 +482,7 @@ class SpectraReader(ABC):
 
         :param context: (Searcher) Search context
         """
+        self.context = context
         self.config = context.config
         self._reader = None
         self._re_scan_number = re.compile(self.config.re_scan_number)
@@ -766,6 +767,8 @@ class RAWReader(SpectraReader):
         :param context: (Searcher) Search context
         """
         super().__init__(context)
+        self._ms1_cache = {}
+        self._deconvoluter = None
         try:
             from native_fisher_py.raw_file_reader import RawFileReaderAdapter
             self.RawFileReaderAdapter = RawFileReaderAdapter
@@ -776,6 +779,23 @@ class RAWReader(SpectraReader):
         except Exception:
             log('RAW file initialisation failed - will not be able to read RAW files')
             raise
+        self._init_deconvoluter()
+
+    def _init_deconvoluter(self):
+        """Initialise precursor deconvoluter if enabled in config."""
+        self._deconvoluter = None
+        pdec_cfg = getattr(self.config, 'precursor_deconvolution', None)
+        if pdec_cfg and getattr(pdec_cfg, 'enabled', False):
+            from xicommon.filters.precursor_deconvoluter import PrecursorDeconvoluter
+            rtol = getattr(self.context, 'ms1_rtol', getattr(self.config, 'ms1_rtol', 25e-6))
+            self._deconvoluter = PrecursorDeconvoluter(
+                min_charge=pdec_cfg.min_charge,
+                max_charge=pdec_cfg.max_charge,
+                min_correlation=pdec_cfg.min_correlation,
+                isolation_margin=pdec_cfg.isolation_margin,
+                max_candidates=pdec_cfg.max_candidates_per_ms2,
+                rtol=rtol
+            )
 
     def load(self, source, file_name=None, source_path=None, offset=0, step=1):
         """
@@ -788,6 +808,9 @@ class RAWReader(SpectraReader):
 
         self.offset = offset
         self.step = step
+        self._ms1_cache = {}
+        self._last_ms1_scan = None
+        self._init_deconvoluter()
         self._reader = self.RawFileReaderAdapter.file_factory(source)
         self.instrument_index = self._reader.instrument_count - 1
         self.sample_name = self._reader.sample_information.sample_name
@@ -851,7 +874,7 @@ class RAWReader(SpectraReader):
         except Exception:
             return np.nan
 
-    def _convert_spectrum(self, scan_number=int):
+    def _convert_spectrum(self, scan_number=int, trailer_dict=None):
         """Convert spectrum to precursor dictionary."""
         precursor = {
             'mz': np.nan,
@@ -863,9 +886,6 @@ class RAWReader(SpectraReader):
             'master_scan_number': np.nan,
             'master_scan_index': np.nan
         }
-
-        intensities_arr = []
-        mz_arr = []
 
         retention_time = self._reader.retention_time_from_scan_number(scan_number)
         rt = retention_time * 60
@@ -879,9 +899,10 @@ class RAWReader(SpectraReader):
         mz_arr = np.array(getattr(centroid_stream, "masses", []), dtype=np.float64)
         intensities_arr = np.array(getattr(centroid_stream, "intensities", []), dtype=np.float64)
 
-        trailer_data = self._reader.get_trailer_extra_information(scan_number)
-        trailer_labels = [x[:-1] if x[-1] == ":" else x for x in trailer_data.labels]
-        trailer_dict = dict(zip(trailer_labels, trailer_data.values))
+        if trailer_dict is None:
+            trailer_data = self._reader.get_trailer_extra_information(scan_number)
+            trailer_labels = [x[:-1] if x[-1] == ":" else x for x in trailer_data.labels]
+            trailer_dict = dict(zip(trailer_labels, trailer_data.values))
 
         precursor['mz'] = float(trailer_dict.get('Monoisotopic M/Z', np.nan))
         precursor['charge'] = int(trailer_dict.get('Charge State', -1))
@@ -896,6 +917,50 @@ class RAWReader(SpectraReader):
                         self.file_name, self.source_path,
                         self.default_run_name, scan_number, scan_index)
 
+    def _convert_spectra(self, scan_number=int, fallback_ms1=None):
+        """Convert spectrum to list of Spectrum objects, with deconvolution if enabled."""
+        centroid_stream = self._reader.get_centroid_stream(scan_number, False)
+        if centroid_stream.length == 0:
+            return []
+        mz_arr = np.array(getattr(centroid_stream, "masses", []), dtype=np.float64)
+        intensities_arr = np.array(getattr(centroid_stream, "intensities", []),
+                                   dtype=np.float64)
+
+        retention_time = self._reader.retention_time_from_scan_number(scan_number)
+        rt = retention_time * 60
+        scan_index = scan_number - 1
+
+        trailer_data = self._reader.get_trailer_extra_information(scan_number)
+        trailer_labels = [x[:-1] if x[-1] == ":" else x for x in trailer_data.labels]
+        trailer_dict = dict(zip(trailer_labels, trailer_data.values))
+
+        if self._deconvoluter is not None:
+            candidates = self._deconvoluter.deconvolute_raw_scan(
+                self._reader, scan_number, self._ms1_cache,
+                fallback_ms1=fallback_ms1, trailer_dict=trailer_dict
+            )
+            if candidates:
+                spectra = []
+                multi = len(candidates) > 1
+                for i, cand in enumerate(candidates):
+                    precursor = {
+                        'mz': cand.mz,
+                        'charge': cand.charge,
+                        'intensity': cand.intensity,
+                        'score': cand.score,
+                        'deconvoluted': True
+                    }
+                    scan_id = f"{scan_number}.{i + 1}" if multi else scan_number
+                    title = f"scan={scan_number} precursor={i + 1}" if multi else ""
+                    spectra.append(Spectrum(precursor, mz_arr, intensities_arr, scan_id, rt,
+                                            self.file_name, self.source_path,
+                                            self.default_run_name, scan_number, scan_index,
+                                            title=title))
+                return spectra
+
+        spec = self._convert_spectrum(scan_number, trailer_dict=trailer_dict)
+        return [spec] if spec is not None else []
+
     @property
     def spectra(self):
         """Spectra generator."""
@@ -904,11 +969,12 @@ class RAWReader(SpectraReader):
             # Build scan-specific statistics
             scan_filter = self._reader.get_filter_for_scan_number(scan_number)
 
-            if scan_filter.ms_order == self.MsOrderType.Ms2:
+            if scan_filter.ms_order == self.MsOrderType.Ms1:
+                self._last_ms1_scan = scan_number
+            elif scan_filter.ms_order == self.MsOrderType.Ms2:
                 if count >= 0 and count % self.step == 0:
-                    spec = self._convert_spectrum(scan_number)
-                    if spec is not None:
-                        yield spec
+                    yield from self._convert_spectra(scan_number,
+                                                     fallback_ms1=self._last_ms1_scan)
                 count += 1
 
 
