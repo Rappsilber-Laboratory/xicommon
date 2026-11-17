@@ -20,6 +20,7 @@ import json
 import yaml
 import re
 import copy
+import warnings
 from memoized_property import memoized_property
 from pyteomics import cmass
 
@@ -220,7 +221,8 @@ class ConfigGroup(metaclass=ConfigMeta):
         self._values = {}
         for key, value in kwargs.items():
             if key not in self._settings:
-                raise KeyError("Unknown setting '%s'" % key)
+                warnings.warn("Unknown setting '%s'" % key, UserWarning, stacklevel=2)
+                continue
             setattr(self, key, value)
 
         # transfer defaults to those values that are not set explicitly

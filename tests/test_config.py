@@ -83,8 +83,9 @@ def test_config_system():
     with pytest.raises(AttributeError):
         config.nonexistent
 
-    with pytest.raises(KeyError):
-        TestConfig(nonexistent=1)
+    with pytest.warns(UserWarning, match="Unknown setting 'nonexistent'"):
+        cfg_unknown = TestConfig(d1=4, sub1=SubConfig(), v_required='str', nonexistent=1)
+    assert not hasattr(cfg_unknown, 'nonexistent')
 
     with pytest.raises(TypeError):
         Setting(int, 'three')
