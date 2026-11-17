@@ -18,10 +18,10 @@ progress = "*"
 dirlock = "*"
 pyyaml = "*"
 psims = "*"
-native-fisher-py = "*"
+native-fisher-py = ">=0.5.0"
 
 [dev-packages]
-pytest = "*"
+pytest = ">=3.6.4"
 pytest-cov = "*"
 pytest-xdist = "*"
 flake8 = ">=6.0.0"
