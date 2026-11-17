@@ -67,15 +67,16 @@ class ContextBase:
                 if recali_config.ms2_rtol > 0:
                     self._rtolerances_ms2[recali_config.file] = recali_config.ms2_rtol
 
+                # store file specific relative tolerance as isotope tolerance
+                # if smaller than default
+                if 0 < recali_config.ms2_rtol < self.config.isotope_config.rtol:
+                    self._isotope_rtol[recali_config.file] = recali_config.ms2_rtol
+
             # store file specific errors for fast (and easy) access
             self._aerrors_ms1[recali_config.file] = recali_config.ms1_aerror
             self._aerrors_ms2[recali_config.file] = recali_config.ms2_aerror
             self._rerrors_ms1[recali_config.file] = recali_config.ms1_rerror
             self._rerrors_ms2[recali_config.file] = recali_config.ms2_rerror
-
-            # store file specific relative tolerance as isotope tolerance if smaller than default
-            if recali_config.ms2_rtol < self.config.isotope_config.rtol:
-                self._isotope_rtol[recali_config.file] = recali_config.ms2_rtol
 
         # store default tolerances and errors for fast access
         # the instance variable is about 10 % faster than the instance instance variable
