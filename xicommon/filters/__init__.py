@@ -21,3 +21,4 @@ from xicommon.filters.isotope_reducer import IsotopeReducer
 from xicommon.filters.charge_reducer import ChargeReducer
 from xicommon.filters.denoise_filter import DenoiseFilter
 from xicommon.filters.loss_cluster_filter import LossClusterFilter
+from xicommon.filters.precursor_deconvoluter import PrecursorDeconvoluter, PrecursorCandidate
