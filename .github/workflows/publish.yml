@@ -27,7 +27,7 @@ jobs:
         CIBW_SKIP: "*-musllinux_*"
         CIBW_ARCHS_MACOS: "x86_64 arm64"
         CIBW_ARCHS_LINUX: "x86_64"
-        CIBW_ARCHS_WINDOWS: "auto"
+        CIBW_ARCHS_WINDOWS: "AMD64"
         CIBW_ENVIRONMENT_MACOS: 'CFLAGS="-Dfdopen=fdopen"'
     
     - name: Store the distribution packages
