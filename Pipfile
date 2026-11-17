@@ -31,6 +31,6 @@ pprofile = "*"
 ruff = "*"
 py-spy = "*"
 recursive-diff = "*"
-setuptools = ">=65"
+setuptools = ">=84.1.0"
 
 [requires]
